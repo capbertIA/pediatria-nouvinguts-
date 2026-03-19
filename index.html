@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pediatria · Acollida Nouvinguts</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f8f7f4;color:#2c2c2a;min-height:100vh}
+/* Colors */
+:root{
+  --teal:#0F6E56;--teal4:#1D9E75;--teal1:#9FE1CB;--teal0:#E1F5EE;
+  --green4:#639922;--green1:#C0DD97;--green0:#EAF3DE;--green8:#27500A;
+  --red6:#A32D2D;--red1:#F7C1C1;--red0:#FCEBEB;--red8:#791F1F;
+  --amber6:#854F0B;--amber1:#FAC775;--amber0:#FAEEDA;
+  --gray0:#F1EFE8;--gray1:#D3D1C7;--gray4:#888780;--gray6:#5F5E5A;--gray8:#444441;
+}
+/* Layout */
+.header{background:var(--teal);position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.15)}
+.header-inner{max-width:900px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-icon{background:rgba(255,255,255,.18);border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.brand-title{color:#fff;font-weight:600;font-size:16px}
+.brand-sub{color:rgba(255,255,255,.7);font-size:11px;text-transform:uppercase;letter-spacing:.4px}
+.lang-sw{display:flex;gap:4px;background:rgba(255,255,255,.1);border-radius:8px;padding:3px}
+.lang-btn{background:transparent;border:none;color:rgba(255,255,255,.7);font-weight:500;font-size:12px;padding:5px 10px;border-radius:6px;cursor:pointer}
+.lang-btn.active{background:rgba(255,255,255,.22);color:#fff}
+/* Steps bar */
+.steps{max-width:900px;margin:0 auto;padding:0 20px 10px;display:flex;align-items:center}
+.step-item{display:flex;align-items:center;gap:6px;flex:1}
+.step-num{width:24px;height:24px;border-radius:50%;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-num.todo{background:rgba(255,255,255,.25);color:rgba(255,255,255,.7)}
+.step-num.active{background:#fff;color:var(--teal)}
+.step-num.done{background:var(--green1);color:var(--green8)}
+.step-lbl{font-size:12px;color:rgba(255,255,255,.65)}
+.step-lbl.active{color:#fff;font-weight:500}
+.step-sep{flex:1;height:1px;background:rgba(255,255,255,.2);margin:0 8px}
+/* Main */
+.main{max-width:900px;margin:0 auto;padding:24px 20px}
+.card{background:#fff;border-radius:16px;border:1px solid var(--gray1);padding:28px;margin-bottom:16px}
+.card h2{font-size:22px;font-weight:600;margin-bottom:6px}
+.card-desc{font-size:14px;color:var(--gray6);margin-bottom:24px;line-height:1.6}
+/* Form */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+label.lbl{font-size:13px;font-weight:500;display:block;margin-bottom:6px}
+input[type=date],input[type=text]{width:100%;padding:10px 12px;border:1px solid var(--gray1);border-radius:10px;font-size:15px;font-family:inherit;background:#fff}
+input:focus{outline:none;border-color:var(--teal4);box-shadow:0 0 0 3px rgba(29,158,117,.12)}
+/* Gender */
+.gender-row{display:flex;gap:10px;margin-bottom:18px}
+.gender-opt{flex:1;display:flex;align-items:center;gap:10px;padding:12px 16px;border:1.5px solid var(--gray1);border-radius:10px;cursor:pointer;transition:all .15s;user-select:none}
+.gender-opt:hover,.gender-opt.sel{border-color:var(--teal4);background:var(--teal0)}
+.radio-dot{width:18px;height:18px;border-radius:50%;border:2px solid var(--gray1);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.gender-opt.sel .radio-dot{border-color:var(--teal4);background:var(--teal4)}
+.radio-inner{width:6px;height:6px;border-radius:50%;background:#fff}
+/* Country */
+.country-wrap{position:relative;margin-bottom:24px}
+.dropdown{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--gray1);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:50;max-height:240px;overflow-y:auto;display:none}
+.dropdown.open{display:block}
+.dropdown-item{padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;font-size:14px}
+.dropdown-item:hover{background:var(--teal0)}
+.drop-region{font-size:12px;color:var(--gray4);margin-left:auto}
+/* Age pill */
+.age-pill{background:var(--teal0);border:1px solid var(--teal1);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--teal);margin-bottom:18px;display:none}
+/* Buttons */
+.btn-row{display:flex;justify-content:flex-end;gap:10px;margin-top:24px}
+.btn-row.sb{justify-content:space-between}
+.btn{padding:11px 26px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all .15s}
+.btn-primary{background:var(--teal4);color:#fff}
+.btn-primary:hover{background:var(--teal)}
+.btn-secondary{background:#fff;color:var(--gray8);border:1px solid var(--gray1)}
+.btn-secondary:hover{background:var(--gray0)}
+/* Vax status options */
+.vax-opts{display:flex;flex-direction:column;gap:8px;margin-bottom:24px}
+.vax-opt{display:flex;align-items:center;gap:12px;padding:13px 16px;border:1.5px solid var(--gray1);border-radius:11px;cursor:pointer;transition:all .15s;user-select:none}
+.vax-opt:hover,.vax-opt.sel{border-color:var(--teal4);background:var(--teal0)}
+.vax-opt-lbl{font-weight:500;font-size:14px}
+.vax-opt-hint{font-size:12px;color:var(--gray6);margin-top:2px}
+/* Vax checkboxes */
+.vax-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;margin-bottom:24px}
+.vax-cb{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--gray1);border-radius:9px;cursor:pointer;user-select:none;transition:all .15s}
+.vax-cb:hover,.vax-cb.chk{border-color:var(--green4);background:var(--green0)}
+.cb-box{width:18px;height:18px;border-radius:5px;border:2px solid var(--gray1);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s;font-size:11px;font-weight:700;color:#fff}
+.vax-cb.chk .cb-box{border-color:var(--green4);background:var(--green4)}
+.vax-name{font-size:13px;font-weight:500;color:var(--gray8)}
+.vax-hint-txt{font-size:11px;color:var(--gray4)}
+/* MGF block */
+.mgf-block{margin-top:20px;padding:16px;background:var(--red0);border:1px solid var(--red1);border-radius:12px}
+.mgf-block h3{font-size:14px;font-weight:600;color:var(--red8);margin-bottom:12px}
+.mgf-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mgf-opt{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1.5px solid var(--red1);border-radius:9px;cursor:pointer;background:#fff;transition:all .15s;user-select:none}
+.mgf-opt:hover,.mgf-opt.sel{border-color:var(--red6);background:var(--red0)}
+.mgf-opt .radio-dot{border-color:var(--red1)}
+.mgf-opt.sel .radio-dot{border-color:var(--red6);background:var(--red6)}
+/* Patient bar */
+.patient-bar{background:linear-gradient(135deg,#0F6E56,#043428);border-radius:14px;padding:18px 22px;margin-bottom:18px;display:flex;align-items:center;gap:16px;color:#fff}
+.patient-avatar{font-size:40px;flex-shrink:0}
+.patient-info{flex:1}
+.patient-name{font-size:18px;font-weight:600;margin-bottom:4px}
+.patient-meta{font-size:13px;opacity:.8;display:flex;flex-wrap:wrap;gap:14px}
+.btn-new{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:500}
+/* Result sections */
+.result-sec{background:#fff;border-radius:16px;border:1px solid var(--gray1);margin-bottom:14px;overflow:hidden}
+.result-hdr{padding:16px 22px;display:flex;align-items:center;gap:12px}
+.result-body{border-top:1px solid var(--gray0);padding:16px 22px;font-size:14px;line-height:1.75}
+.result-body h3{font-size:14px;font-weight:600;color:var(--teal);margin:14px 0 6px;text-transform:uppercase;letter-spacing:.5px}
+.result-body ul{padding-left:18px;margin:6px 0}
+.result-body li{margin-bottom:5px}
+.result-body strong{font-weight:600}
+.badge{font-size:12px;padding:3px 10px;border-radius:20px;font-weight:600}
+.badge-urgent{background:var(--red0);color:var(--red6)}
+.badge-mod{background:var(--amber0);color:var(--amber6)}
+.badge-ok{background:var(--green0);color:var(--green4)}
+/* Loading dots */
+.dots{display:flex;gap:6px;align-items:center;padding:8px 0}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--teal4);animation:bonce 1.2s infinite}
+.dot:nth-child(2){animation-delay:.15s}.dot:nth-child(3){animation-delay:.3s}
+@keyframes bonce{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-5px);opacity:1}}
+/* Progress bar for sequential loading */
+.progress-bar{height:3px;background:var(--gray1);border-radius:2px;overflow:hidden;margin-bottom:16px;display:none}
+.progress-fill{height:100%;background:var(--teal4);transition:width .4s ease;border-radius:2px}
+/* Responsive */
+@media(max-width:600px){.grid2{grid-template-columns:1fr}.mgf-grid{grid-template-columns:1fr}.vax-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-inner">
+    <div class="brand">
+      <div class="brand-icon">🏥</div>
+      <div>
+        <div class="brand-title" id="appTitle">Pediatria · Acollida Nouvinguts</div>
+        <div class="brand-sub" id="appSub">Generalitat de Catalunya · PAPPS 2025</div>
+      </div>
+    </div>
+    <div class="lang-sw">
+      <button class="lang-btn active" onclick="setLang('ca')">CA</button>
+      <button class="lang-btn" onclick="setLang('es')">ES</button>
+      <button class="lang-btn" onclick="setLang('en')">EN</button>
+    </div>
+  </div>
+  <div class="steps" id="stepsBar">
+    <div class="step-item">
+      <div class="step-num active" id="sn1">1</div>
+      <div class="step-lbl active" id="sl1">Dades pacient</div>
+    </div>
+    <div class="step-sep"></div>
+    <div class="step-item">
+      <div class="step-num todo" id="sn2">2</div>
+      <div class="step-lbl" id="sl2">Historial vacunal</div>
+    </div>
+    <div class="step-sep"></div>
+    <div class="step-item" style="flex:none">
+      <div class="step-num todo" id="sn3">3</div>
+      <div class="step-lbl" id="sl3">Informe d'acollida</div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- STEP 1 -->
+<div id="step1">
+  <div class="card">
+    <h2 id="s1title">Dades del pacient nouvingut</h2>
+    <p class="card-desc" id="s1desc">Introdueix les dades per generar el pla d'acollida personalitzat.</p>
+    <div class="grid2">
+      <div>
+        <label class="lbl" id="lblDob">Data de naixement</label>
+        <input type="date" id="dob" oninput="calcAge()">
+      </div>
+      <div>
+        <label class="lbl" id="lblArrival">Data d'arribada a Catalunya</label>
+        <input type="date" id="arrival" oninput="calcAge()">
+      </div>
+    </div>
+    <div class="age-pill" id="agePill"></div>
+    <div style="margin-bottom:18px">
+      <label class="lbl" id="lblGender">Sexe biològic</label>
+      <div class="gender-row">
+        <div class="gender-opt" id="gM" onclick="selGender('M')">
+          <div class="radio-dot" id="rdM"></div>
+          <span style="font-size:20px">👦</span>
+          <span style="font-weight:500;font-size:14px" id="lblM">Masculí</span>
+        </div>
+        <div class="gender-opt" id="gF" onclick="selGender('F')">
+          <div class="radio-dot" id="rdF"></div>
+          <span style="font-size:20px">👧</span>
+          <span style="font-weight:500;font-size:14px" id="lblF">Femení</span>
+        </div>
+      </div>
+    </div>
+    <div class="country-wrap">
+      <label class="lbl" id="lblCountry">País d'origen</label>
+      <input type="text" id="countryInput" placeholder="Escriu el país..." autocomplete="off"
+        oninput="filterCountries(this.value)" onfocus="openDrop()" onblur="setTimeout(closeDrop,200)">
+      <div class="dropdown" id="countryDrop"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="goStep2()" id="btnNext1">Continuar →</button>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 2 -->
+<div id="step2" style="display:none">
+  <div class="card">
+    <h2 id="s2title">Historial vacunal</h2>
+    <p class="card-desc" id="s2desc">Indica el tipus de documentació vacunal disponible.</p>
+
+    <label class="lbl" id="lblVaxStatus">Estat de la documentació vacunal</label>
+    <div class="vax-opts">
+      <div class="vax-opt" id="vo_unknown" onclick="selVaxStatus('unknown')">
+        <div class="radio-dot" id="vr_unknown"></div>
+        <span style="font-size:20px">🔵</span>
+        <div>
+          <div class="vax-opt-lbl" id="lblUnknown">Desconegut — Sense cap informació</div>
+          <div class="vax-opt-hint" id="hintUnknown">Protocol inici des de zero</div>
+        </div>
+      </div>
+      <div class="vax-opt" id="vo_record" onclick="selVaxStatus('record')">
+        <div class="radio-dot" id="vr_record"></div>
+        <span style="font-size:20px">📋</span>
+        <div>
+          <div class="vax-opt-lbl" id="lblRecord">Cartilla vacunal — Documentació escrita</div>
+          <div class="vax-opt-hint" id="hintRecord">Selecciona les vacunes documentades</div>
+        </div>
+      </div>
+      <div class="vax-opt" id="vo_verbal" onclick="selVaxStatus('verbal')">
+        <div class="radio-dot" id="vr_verbal"></div>
+        <span style="font-size:20px">🗣️</span>
+        <div>
+          <div class="vax-opt-lbl" id="lblVerbal">Verbalització familiar — Sense document físic</div>
+          <div class="vax-opt-hint" id="hintVerbal">Informació referida pels pares/tutors</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="vaxListSection" style="display:none">
+      <div class="lbl" id="lblVaxSel" style="margin-bottom:10px">Marca les vacunes administrades (o comunicades per la família):</div>
+      <div class="vax-grid" id="vaxGrid"></div>
+    </div>
+
+    <div id="mgfSection" style="display:none">
+      <div class="mgf-block">
+        <h3 id="mgfQ">La nena / adolescent ha patit MGF?</h3>
+        <div class="mgf-grid">
+          <div class="mgf-opt" id="mo_no" onclick="selMgf('no')">
+            <div class="radio-dot" id="mr_no"></div>
+            <span style="font-size:16px">✅</span>
+            <span style="font-size:13px;font-weight:500" id="mgfNo">No</span>
+          </div>
+          <div class="mgf-opt" id="mo_yes" onclick="selMgf('yes')">
+            <div class="radio-dot" id="mr_yes"></div>
+            <span style="font-size:16px">⚠️</span>
+            <span style="font-size:13px;font-weight:500" id="mgfYes">Sí, confirmada</span>
+          </div>
+          <div class="mgf-opt" id="mo_suspected" onclick="selMgf('suspected')">
+            <div class="radio-dot" id="mr_suspected"></div>
+            <span style="font-size:16px">🔍</span>
+            <span style="font-size:13px;font-weight:500" id="mgfSusp">Sospita / No explorada</span>
+          </div>
+          <div class="mgf-opt" id="mo_unknown" onclick="selMgf('unknown')">
+            <div class="radio-dot" id="mr_unknown"></div>
+            <span style="font-size:16px">❓</span>
+            <span style="font-size:13px;font-weight:500" id="mgfUnk">Desconegut</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row sb">
+      <button class="btn btn-secondary" onclick="goStep1()" id="btnBack">← Tornar</button>
+      <button class="btn btn-primary" onclick="generateReport()" id="btnGen">Generar informe ✦</button>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 3 -->
+<div id="step3" style="display:none">
+  <div class="patient-bar">
+    <div class="patient-avatar" id="patAvatar">👶</div>
+    <div class="patient-info">
+      <div class="patient-name" id="patName"></div>
+      <div class="patient-meta" id="patMeta"></div>
+    </div>
+    <button class="btn-new" onclick="resetApp()" id="btnNew">+ Nou pacient</button>
+  </div>
+
+  <div class="progress-bar" id="progressBar">
+    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+  </div>
+
+  <div class="result-sec">
+    <div class="result-hdr"><span style="font-size:22px">💉</span><span style="font-weight:500;font-size:16px" id="secVax">Calendari de vacunació</span><span id="statusVax" style="font-size:13px;color:#1D9E75;font-style:italic;margin-left:auto"></span></div>
+    <div class="result-body" id="bodyVax"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+  </div>
+  <div class="result-sec">
+    <div class="result-hdr"><span style="font-size:22px">📋</span><span style="font-weight:500;font-size:16px" id="secPapps">Visites PAPPS / Créixer amb Salut</span><span id="statusPapps" style="font-size:13px;color:#1D9E75;font-style:italic;margin-left:auto"></span></div>
+    <div class="result-body" id="bodyPapps"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+  </div>
+  <div class="result-sec">
+    <div class="result-hdr"><span style="font-size:22px">🔬</span><span style="font-weight:500;font-size:16px" id="secAnal">Analítiques i proves complementàries</span><span id="statusAnal" style="font-size:13px;color:#1D9E75;font-style:italic;margin-left:auto"></span></div>
+    <div class="result-body" id="bodyAnal"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+  </div>
+  <div class="result-sec" id="mgfResultSec" style="display:none">
+    <div class="result-hdr">
+      <span style="font-size:22px">⚠️</span>
+      <span style="font-weight:500;font-size:16px" id="secMgf">Valoració MGF</span>
+      <span id="mgfBadge" class="badge" style="margin-left:auto"></span>
+    </div>
+    <div class="result-body" id="bodyMgf"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+// ── DADES ──────────────────────────────────────────────────────────
+const COUNTRIES = [
+  {code:'AF',ca:'Afganistan',es:'Afganistán',en:'Afghanistan',region:'Asia Meridional'},
+  {code:'DZ',ca:'Algèria',es:'Argelia',en:'Algeria',region:'Magrib'},
+  {code:'AO',ca:'Angola',es:'Angola',en:'Angola',region:'Àfrica Subsahariana'},
+  {code:'AR',ca:'Argentina',es:'Argentina',en:'Argentina',region:'Amèrica Llatina'},
+  {code:'AM',ca:'Armènia',es:'Armenia',en:'Armenia',region:'Europa de lEst'},
+  {code:'AZ',ca:'Azerbaidjan',es:'Azerbaiyán',en:'Azerbaijan',region:'Europa de lEst'},
+  {code:'BD',ca:'Bangladesh',es:'Bangladesh',en:'Bangladesh',region:'Asia Meridional'},
+  {code:'BY',ca:'Bielorússia',es:'Bielorrusia',en:'Belarus',region:'Europa de lEst'},
+  {code:'BJ',ca:'Benín',es:'Benín',en:'Benin',region:'Àfrica Subsahariana'},
+  {code:'BO',ca:'Bolívia',es:'Bolivia',en:'Bolivia',region:'Amèrica Llatina'},
+  {code:'BA',ca:'Bòsnia i Hercegovina',es:'Bosnia y Herzegovina',en:'Bosnia',region:'Europa de lEst'},
+  {code:'BF',ca:'Burkina Faso',es:'Burkina Faso',en:'Burkina Faso',region:'Àfrica Subsahariana'},
+  {code:'BI',ca:'Burundi',es:'Burundi',en:'Burundi',region:'Àfrica Subsahariana'},
+  {code:'KH',ca:'Cambodja',es:'Camboya',en:'Cambodia',region:'Extrem Orient'},
+  {code:'CM',ca:'Camerun',es:'Camerún',en:'Cameroon',region:'Àfrica Subsahariana'},
+  {code:'CF',ca:'República Centreafricana',es:'Rep. Centroafricana',en:'C.African Republic',region:'Àfrica Subsahariana'},
+  {code:'TD',ca:'Txad',es:'Chad',en:'Chad',region:'Àfrica Subsahariana'},
+  {code:'CL',ca:'Xile',es:'Chile',en:'Chile',region:'Amèrica Llatina'},
+  {code:'CN',ca:'Xina',es:'China',en:'China',region:'Extrem Orient'},
+  {code:'CO',ca:'Colòmbia',es:'Colombia',en:'Colombia',region:'Amèrica Llatina'},
+  {code:'CD',ca:'Congo RD',es:'Congo RD',en:'DR Congo',region:'Àfrica Subsahariana'},
+  {code:'CI',ca:"Costa d'Ivori",es:'Costa de Marfil',en:"Côte d'Ivoire",region:'Àfrica Subsahariana'},
+  {code:'HR',ca:'Croàcia',es:'Croacia',en:'Croatia',region:'Europa de lEst'},
+  {code:'CU',ca:'Cuba',es:'Cuba',en:'Cuba',region:'Amèrica Llatina'},
+  {code:'DJ',ca:'Djibouti',es:'Yibuti',en:'Djibouti',region:'Àfrica Subsahariana'},
+  {code:'DO',ca:'República Dominicana',es:'Rep. Dominicana',en:'Dominican Republic',region:'Amèrica Llatina'},
+  {code:'EC',ca:'Equador',es:'Ecuador',en:'Ecuador',region:'Amèrica Llatina'},
+  {code:'EG',ca:'Egipte',es:'Egipto',en:'Egypt',region:'Magrib'},
+  {code:'SV',ca:'El Salvador',es:'El Salvador',en:'El Salvador',region:'Amèrica Llatina'},
+  {code:'ER',ca:'Eritrea',es:'Eritrea',en:'Eritrea',region:'Àfrica Subsahariana'},
+  {code:'ET',ca:'Etiòpia',es:'Etiopía',en:'Ethiopia',region:'Àfrica Subsahariana'},
+  {code:'GA',ca:'Gabon',es:'Gabón',en:'Gabon',region:'Àfrica Subsahariana'},
+  {code:'GM',ca:'Gàmbia',es:'Gambia',en:'Gambia',region:'Àfrica Subsahariana'},
+  {code:'GE',ca:'Geòrgia',es:'Georgia',en:'Georgia',region:'Europa de lEst'},
+  {code:'GH',ca:'Ghana',es:'Ghana',en:'Ghana',region:'Àfrica Subsahariana'},
+  {code:'GN',ca:'Guinea',es:'Guinea',en:'Guinea',region:'Àfrica Subsahariana'},
+  {code:'GW',ca:'Guinea-Bissau',es:'Guinea-Bissau',en:'Guinea-Bissau',region:'Àfrica Subsahariana'},
+  {code:'GT',ca:'Guatemala',es:'Guatemala',en:'Guatemala',region:'Amèrica Llatina'},
+  {code:'HT',ca:'Haití',es:'Haití',en:'Haiti',region:'Amèrica Llatina'},
+  {code:'HN',ca:'Hondures',es:'Honduras',en:'Honduras',region:'Amèrica Llatina'},
+  {code:'IN',ca:'Índia',es:'India',en:'India',region:'Asia Meridional'},
+  {code:'ID',ca:'Indonèsia',es:'Indonesia',en:'Indonesia',region:'Extrem Orient'},
+  {code:'IR',ca:'Iran',es:'Irán',en:'Iran',region:'Orient Mitjà'},
+  {code:'IQ',ca:'Iraq',es:'Iraq',en:'Iraq',region:'Orient Mitjà'},
+  {code:'JO',ca:'Jordània',es:'Jordania',en:'Jordan',region:'Orient Mitjà'},
+  {code:'KZ',ca:'Kazakhstan',es:'Kazajistán',en:'Kazakhstan',region:'Europa de lEst'},
+  {code:'KE',ca:'Kenya',es:'Kenia',en:'Kenya',region:'Àfrica Subsahariana'},
+  {code:'KG',ca:'Kirguizistan',es:'Kirguistán',en:'Kyrgyzstan',region:'Europa de lEst'},
+  {code:'LA',ca:'Laos',es:'Laos',en:'Laos',region:'Extrem Orient'},
+  {code:'LB',ca:'Líban',es:'Líbano',en:'Lebanon',region:'Orient Mitjà'},
+  {code:'LR',ca:'Libèria',es:'Liberia',en:'Liberia',region:'Àfrica Subsahariana'},
+  {code:'LY',ca:'Líbia',es:'Libia',en:'Libya',region:'Magrib'},
+  {code:'MG',ca:'Madagascar',es:'Madagascar',en:'Madagascar',region:'Àfrica Subsahariana'},
+  {code:'MW',ca:'Malawi',es:'Malaui',en:'Malawi',region:'Àfrica Subsahariana'},
+  {code:'ML',ca:'Mali',es:'Malí',en:'Mali',region:'Àfrica Subsahariana'},
+  {code:'MR',ca:'Mauritània',es:'Mauritania',en:'Mauritania',region:'Magrib'},
+  {code:'MX',ca:'Mèxic',es:'México',en:'Mexico',region:'Amèrica Llatina'},
+  {code:'MD',ca:'Moldàvia',es:'Moldavia',en:'Moldova',region:'Europa de lEst'},
+  {code:'MA',ca:'Marroc',es:'Marruecos',en:'Morocco',region:'Magrib'},
+  {code:'MZ',ca:'Moçambic',es:'Mozambique',en:'Mozambique',region:'Àfrica Subsahariana'},
+  {code:'MM',ca:'Myanmar',es:'Myanmar',en:'Myanmar',region:'Extrem Orient'},
+  {code:'NP',ca:'Nepal',es:'Nepal',en:'Nepal',region:'Asia Meridional'},
+  {code:'NI',ca:'Nicaragua',es:'Nicaragua',en:'Nicaragua',region:'Amèrica Llatina'},
+  {code:'NE',ca:'Níger',es:'Níger',en:'Niger',region:'Àfrica Subsahariana'},
+  {code:'NG',ca:'Nigèria',es:'Nigeria',en:'Nigeria',region:'Àfrica Subsahariana'},
+  {code:'PK',ca:'Pakistan',es:'Pakistán',en:'Pakistan',region:'Asia Meridional'},
+  {code:'PS',ca:'Palestina',es:'Palestina',en:'Palestine',region:'Orient Mitjà'},
+  {code:'PY',ca:'Paraguai',es:'Paraguay',en:'Paraguay',region:'Amèrica Llatina'},
+  {code:'PE',ca:'Perú',es:'Perú',en:'Peru',region:'Amèrica Llatina'},
+  {code:'PH',ca:'Filipines',es:'Filipinas',en:'Philippines',region:'Extrem Orient'},
+  {code:'RO',ca:'Romania',es:'Rumanía',en:'Romania',region:'Europa de lEst'},
+  {code:'RU',ca:'Rússia',es:'Rusia',en:'Russia',region:'Europa de lEst'},
+  {code:'RW',ca:'Rwanda',es:'Ruanda',en:'Rwanda',region:'Àfrica Subsahariana'},
+  {code:'SN',ca:'Senegal',es:'Senegal',en:'Senegal',region:'Àfrica Subsahariana'},
+  {code:'SL',ca:'Sierra Leone',es:'Sierra Leona',en:'Sierra Leone',region:'Àfrica Subsahariana'},
+  {code:'SO',ca:'Somàlia',es:'Somalia',en:'Somalia',region:'Àfrica Subsahariana'},
+  {code:'SD',ca:'Sudan',es:'Sudán',en:'Sudan',region:'Àfrica Subsahariana'},
+  {code:'SS',ca:'Sudan del Sud',es:'Sudán del Sur',en:'South Sudan',region:'Àfrica Subsahariana'},
+  {code:'LK',ca:'Sri Lanka',es:'Sri Lanka',en:'Sri Lanka',region:'Asia Meridional'},
+  {code:'SY',ca:'Síria',es:'Siria',en:'Syria',region:'Orient Mitjà'},
+  {code:'TZ',ca:'Tanzània',es:'Tanzania',en:'Tanzania',region:'Àfrica Subsahariana'},
+  {code:'TJ',ca:'Tadjikistan',es:'Tayikistán',en:'Tajikistan',region:'Europa de lEst'},
+  {code:'TH',ca:'Tailàndia',es:'Tailandia',en:'Thailand',region:'Extrem Orient'},
+  {code:'TL',ca:'Timor Oriental',es:'Timor Oriental',en:'Timor-Leste',region:'Extrem Orient'},
+  {code:'TG',ca:'Togo',es:'Togo',en:'Togo',region:'Àfrica Subsahariana'},
+  {code:'TN',ca:'Tunísia',es:'Túnez',en:'Tunisia',region:'Magrib'},
+  {code:'TM',ca:'Turkmenistan',es:'Turkmenistán',en:'Turkmenistan',region:'Europa de lEst'},
+  {code:'TR',ca:'Turquia',es:'Turquía',en:'Turkey',region:'Orient Mitjà'},
+  {code:'UA',ca:'Ucraïna',es:'Ucrania',en:'Ukraine',region:'Europa de lEst'},
+  {code:'UG',ca:'Uganda',es:'Uganda',en:'Uganda',region:'Àfrica Subsahariana'},
+  {code:'UZ',ca:'Uzbekistan',es:'Uzbekistán',en:'Uzbekistan',region:'Europa de lEst'},
+  {code:'VE',ca:'Veneçuela',es:'Venezuela',en:'Venezuela',region:'Amèrica Llatina'},
+  {code:'VN',ca:'Vietnam',es:'Vietnam',en:'Vietnam',region:'Extrem Orient'},
+  {code:'YE',ca:'Iemen',es:'Yemen',en:'Yemen',region:'Orient Mitjà'},
+  {code:'ZM',ca:'Zàmbia',es:'Zambia',en:'Zambia',region:'Àfrica Subsahariana'},
+  {code:'ZW',ca:'Zimbabwe',es:'Zimbabue',en:'Zimbabwe',region:'Àfrica Subsahariana'},
+];
+
+const MGF_HIGH = ['GN','SL','SO','DJ','ML','ER','ET','SD','SS','EG','SN','LR','MR','BF','GM','CI','GW','NE','NG','TD','CF'];
+const MGF_MED  = ['CD','KE','TZ','UG','RW','CM','GA','MZ','MW','ZM','YE','TN','MA'];
+
+const VACCINES = [
+  {id:'hexavalent',ca:'Hexavalent (DTPa+HBV+Hib+IPV)',es:'Hexavalente',en:'Hexavalent',hint:'2m, 4m, 11m'},
+  {id:'rotavirus', ca:'Rotavirus',es:'Rotavirus',en:'Rotavirus',hint:'2m, 4m'},
+  {id:'pneumococ', ca:'Pneumococ conjugada (PCV)',es:'Neumococo conjugada',en:'Pneumococcal (PCV)',hint:'2m, 4m, 11m'},
+  {id:'menb',      ca:'Meningococ B',es:'Meningococo B',en:'Meningococcal B',hint:'2m, 4m, 12m'},
+  {id:'menc',      ca:'Meningococ C conjugada',es:'Meningococo C',en:'Meningococcal C',hint:'4m'},
+  {id:'menacwy',   ca:'Meningococ ACWY tetravalent',es:'Meningococo ACWY',en:'Meningococcal ACWY',hint:'12m, 11-12a'},
+  {id:'triple',    ca:'Triple vírica (SRP)',es:'Triple vírica (SRP)',en:'MMR',hint:'12m, 3a'},
+  {id:'varicella', ca:'Varicel·la',es:'Varicela',en:'Varicella',hint:'15m, 3a'},
+  {id:'hepa',      ca:'Hepatitis A',es:'Hepatitis A',en:'Hepatitis A',hint:'15m, 6a'},
+  {id:'hpv',       ca:'VPH (Papil·loma humà)',es:'VPH',en:'HPV',hint:'11-12a'},
+  {id:'dtpapi',    ca:'DTPa-PI (6 anys)',es:'DTPa-PI (6 años)',en:'DTPa-IPV (6y)',hint:'6a'},
+  {id:'dtpa',      ca:'dTpa (11-12 anys)',es:'dTpa (11-12 años)',en:'dTpa (11-12y)',hint:'11-12a'},
+  {id:'td',        ca:'Td (Adults)',es:'Td (Adultos)',en:'Td (Adults)',hint:'40a, 65a'},
+  {id:'grip',      ca:'Grip (anual)',es:'Gripe (anual)',en:'Influenza (annual)',hint:'6m-59m, ≥60a'},
+  {id:'herpes',    ca:'Herpes zòster',es:'Herpes zóster',en:'Herpes zoster',hint:'65a, 80a'},
+];
+
+const T = {
+  ca:{s1title:'Dades del pacient nouvingut',s1desc:"Introdueix les dades per generar el pla d'acollida personalitzat.",
+    lblDob:'Data de naixement',lblArrival:"Data d'arribada a Catalunya",lblGender:'Sexe biològic',
+    lblM:'Masculí',lblF:'Femení',lblCountry:"País d'origen",cPh:'Escriu el país...',
+    s2title:'Historial vacunal',s2desc:'Indica el tipus de documentació vacunal disponible.',
+    lblVaxStatus:'Estat de la documentació vacunal',
+    lblUnknown:'Desconegut — Sense cap informació',hintUnknown:'Protocol inici des de zero',
+    lblRecord:'Cartilla vacunal — Documentació escrita',hintRecord:'Selecciona les vacunes documentades',
+    lblVerbal:'Verbalització familiar — Sense document físic',hintVerbal:'Informació referida pels pares/tutors',
+    lblVaxSel:'Marca les vacunes administrades (o comunicades per la família):',
+    mgfQ:'La nena / adolescent ha patit MGF?',
+    mgfNo:'No',mgfYes:'Sí, confirmada',mgfSusp:'Sospita / No explorada',mgfUnk:'Desconegut',
+    btnNext1:'Continuar →',btnBack:'← Tornar',btnGen:'Generar informe ✦',btnNew:'+ Nou pacient',
+    sl1:'Dades pacient',sl2:'Historial vacunal',sl3:"Informe d'acollida",
+    secVax:'Calendari de vacunació',secPapps:'Visites PAPPS / Créixer amb Salut',
+    secAnal:'Analítiques i proves complementàries',secMgf:'Valoració MGF',
+    ageY:'anys',ageM:'mesos',edat:'Edat actual',
+    loadingTxt:['Analitzant vacunes...','Calculant visites PAPPS...','Preparant analítiques...','Valorant risc MGF...'],
+    errFields:'Si us plau, omple tots els camps.',errVax:'Selecciona el tipus de documentació vacunal.',
+    mgfHigh:'Risc ALT',mgfMod:'Risc MODERAT',mgfLow:'Risc BAIX',
+  },
+  es:{s1title:'Datos del paciente recién llegado',s1desc:'Introduce los datos para generar el plan de acogida personalizado.',
+    lblDob:'Fecha de nacimiento',lblArrival:'Fecha de llegada a Cataluña',lblGender:'Sexo biológico',
+    lblM:'Masculino',lblF:'Femenino',lblCountry:'País de origen',cPh:'Escribe el país...',
+    s2title:'Historial vacunal',s2desc:'Indica el tipo de documentación vacunal disponible.',
+    lblVaxStatus:'Estado de la documentación vacunal',
+    lblUnknown:'Desconocido — Sin ninguna información',hintUnknown:'Protocolo inicio desde cero',
+    lblRecord:'Cartilla vacunal — Documentación escrita',hintRecord:'Selecciona las vacunas documentadas',
+    lblVerbal:'Verbalización familiar — Sin documento físico',hintVerbal:'Información referida por padres/tutores',
+    lblVaxSel:'Marca las vacunas administradas (o comunicadas por la familia):',
+    mgfQ:'¿La niña / adolescente ha sufrido MGF?',
+    mgfNo:'No',mgfYes:'Sí, confirmada',mgfSusp:'Sospecha / No explorada',mgfUnk:'Desconocido',
+    btnNext1:'Continuar →',btnBack:'← Volver',btnGen:'Generar informe ✦',btnNew:'+ Nuevo paciente',
+    sl1:'Datos paciente',sl2:'Historial vacunal',sl3:'Informe de acogida',
+    secVax:'Calendario de vacunación',secPapps:'Visitas PAPPS / Créixer amb Salut',
+    secAnal:'Analíticas y pruebas complementarias',secMgf:'Valoración MGF',
+    ageY:'años',ageM:'meses',edat:'Edad actual',
+    loadingTxt:['Analizando vacunas...','Calculando visitas PAPPS...','Preparando analíticas...','Valorando riesgo MGF...'],
+    errFields:'Por favor, completa todos los campos.',errVax:'Selecciona el tipo de documentación vacunal.',
+    mgfHigh:'Riesgo ALTO',mgfMod:'Riesgo MODERADO',mgfLow:'Riesgo BAJO',
+  },
+  en:{s1title:'Newcomer patient data',s1desc:'Enter data to generate a personalised care plan.',
+    lblDob:'Date of birth',lblArrival:'Date of arrival in Catalonia',lblGender:'Biological sex',
+    lblM:'Male',lblF:'Female',lblCountry:'Country of origin',cPh:'Type country...',
+    s2title:'Vaccination history',s2desc:'Indicate the type of vaccination documentation available.',
+    lblVaxStatus:'Vaccination documentation status',
+    lblUnknown:'Unknown — No information available',hintUnknown:'Zero-start protocol will be applied',
+    lblRecord:'Vaccination record — Written documentation',hintRecord:'Select documented vaccines below',
+    lblVerbal:'Family report — No physical document',hintVerbal:'Information provided verbally by parents/guardians',
+    lblVaxSel:'Check vaccines administered (or reported by family):',
+    mgfQ:'Has the girl / adolescent undergone FGM?',
+    mgfNo:'No',mgfYes:'Yes, confirmed',mgfSusp:'Suspected / Not examined',mgfUnk:'Unknown',
+    btnNext1:'Continue →',btnBack:'← Back',btnGen:'Generate report ✦',btnNew:'+ New patient',
+    sl1:'Patient data',sl2:'Vaccination history',sl3:'Intake report',
+    secVax:'Vaccination schedule',secPapps:'PAPPS follow-up visits',
+    secAnal:'Lab tests & complementary studies',secMgf:'FGM Assessment',
+    ageY:'years',ageM:'months',edat:'Current age',
+    loadingTxt:['Analysing vaccines...','Calculating PAPPS visits...','Preparing lab tests...','Assessing FGM risk...'],
+    errFields:'Please fill in all required fields.',errVax:'Select the vaccination documentation type.',
+    mgfHigh:'HIGH risk',mgfMod:'MODERATE risk',mgfLow:'LOW risk',
+  }
+};
+
+// ── ESTAT ──────────────────────────────────────────────────────────
+let lang='ca', gender='', country=null, vaxStatus='', vaccines=new Set(), mgfStatus='';
+
+function t(k){return T[lang][k]||k}
+function cname(c){return c[lang]||c.ca}
+function flag(code){return code.toUpperCase().split('').map(c=>String.fromCodePoint(0x1F1E6+c.charCodeAt(0)-65)).join('')}
+
+function setLang(l){
+  lang=l;
+  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active',b.textContent===l.toUpperCase()));
+  applyTranslations();
+}
+
+function applyTranslations(){
+  const keys=['s1title','s1desc','lblDob','lblArrival','lblGender','lblM','lblF','lblCountry',
+    's2title','s2desc','lblVaxStatus','lblUnknown','hintUnknown','lblRecord','hintRecord',
+    'lblVerbal','hintVerbal','lblVaxSel','mgfQ','mgfNo','mgfYes','mgfSusp','mgfUnk',
+    'btnNext1','btnBack','btnGen','btnNew','sl1','sl2','sl3',
+    'secVax','secPapps','secAnal','secMgf'];
+  keys.forEach(k=>{const el=document.getElementById(k);if(el)el.textContent=t(k);});
+  document.getElementById('countryInput').placeholder=t('cPh');
+  if(country) document.getElementById('countryInput').value=cname(country);
+  buildVaxGrid();
+}
+
+// ── EDAT ──────────────────────────────────────────────────────────
+function calcAge(){
+  const dob=document.getElementById('dob').value;
+  if(!dob)return;
+  const d=new Date(dob),now=new Date();
+  let y=now.getFullYear()-d.getFullYear(),m=now.getMonth()-d.getMonth();
+  if(m<0){y--;m+=12;}
+  const str=y>0?`${y} ${t('ageY')} ${m} ${t('ageM')}`:`${m} ${t('ageM')}`;
+  const pill=document.getElementById('agePill');
+  pill.textContent=`${t('edat')}: ${str}`;
+  pill.style.display='block';
+}
+
+function ageStr(){
+  const dob=document.getElementById('dob').value;
+  if(!dob)return'';
+  const d=new Date(dob),now=new Date();
+  let y=now.getFullYear()-d.getFullYear(),m=now.getMonth()-d.getMonth();
+  if(m<0){y--;m+=12;}
+  return y>0?`${y} ${t('ageY')} ${m} ${t('ageM')}`:`${m} ${t('ageM')}`;
+}
+
+// ── GÈNERE ────────────────────────────────────────────────────────
+function selGender(g){
+  gender=g;
+  ['M','F'].forEach(v=>{
+    document.getElementById('g'+v).classList.toggle('sel',v===g);
+    const rd=document.getElementById('rd'+v);
+    rd.style.borderColor=v===g?'#1D9E75':'';
+    rd.style.background=v===g?'#1D9E75':'';
+    rd.innerHTML=v===g?'<div class="radio-inner"></div>':'';
+  });
+}
+
+// ── PAÍS ──────────────────────────────────────────────────────────
+function filterCountries(val){
+  const dd=document.getElementById('countryDrop');
+  if(!val||val.length<2){dd.classList.remove('open');return;}
+  const v=val.toLowerCase();
+  const hits=COUNTRIES.filter(c=>[c.ca,c.es,c.en].some(n=>n.toLowerCase().includes(v))).slice(0,8);
+  if(!hits.length){dd.classList.remove('open');return;}
+  dd.innerHTML=hits.map(c=>`
+    <div class="dropdown-item" onmousedown="pickCountry('${c.code}')">
+      <span style="font-size:18px">${flag(c.code)}</span>
+      <span>${cname(c)}</span>
+      <span class="drop-region">${c.region}</span>
+    </div>`).join('');
+  dd.classList.add('open');
+}
+function pickCountry(code){
+  country=COUNTRIES.find(c=>c.code===code);
+  document.getElementById('countryInput').value=cname(country);
+  document.getElementById('countryDrop').classList.remove('open');
+}
+function openDrop(){if(document.getElementById('countryInput').value.length>=2)filterCountries(document.getElementById('countryInput').value);}
+function closeDrop(){document.getElementById('countryDrop').classList.remove('open');}
+
+// ── VAX STATUS ────────────────────────────────────────────────────
+function selVaxStatus(val){
+  vaxStatus=val;
+  ['unknown','record','verbal'].forEach(v=>{
+    document.getElementById('vo_'+v).classList.toggle('sel',v===val);
+    const rd=document.getElementById('vr_'+v);
+    rd.style.borderColor=v===val?'#1D9E75':'';
+    rd.style.background=v===val?'#1D9E75':'';
+    rd.innerHTML=v===val?'<div class="radio-inner"></div>':'';
+  });
+  document.getElementById('vaxListSection').style.display=(val==='record'||val==='verbal')?'block':'none';
+}
+
+// ── VACUNES ───────────────────────────────────────────────────────
+function buildVaxGrid(){
+  const g=document.getElementById('vaxGrid');
+  if(!g)return;
+  g.innerHTML=VACCINES.map(v=>`
+    <div class="vax-cb${vaccines.has(v.id)?' chk':''}" id="vc_${v.id}" onclick="toggleVax('${v.id}')">
+      <div class="cb-box">${vaccines.has(v.id)?'✓':''}</div>
+      <div>
+        <div class="vax-name">${v[lang]||v.ca}</div>
+        <div class="vax-hint-txt">${v.hint}</div>
+      </div>
+    </div>`).join('');
+}
+
+function toggleVax(id){
+  vaccines.has(id)?vaccines.delete(id):vaccines.add(id);
+  const el=document.getElementById('vc_'+id);
+  if(el){el.classList.toggle('chk',vaccines.has(id));el.querySelector('.cb-box').textContent=vaccines.has(id)?'✓':'';}
+}
+
+// ── MGF ───────────────────────────────────────────────────────────
+function selMgf(val){
+  mgfStatus=val;
+  ['no','yes','suspected','unknown'].forEach(v=>{
+    document.getElementById('mo_'+v).classList.toggle('sel',v===val);
+    const rd=document.getElementById('mr_'+v);
+    rd.style.borderColor=v===val?'#A32D2D':'';
+    rd.style.background=v===val?'#A32D2D':'';
+    rd.innerHTML=v===val?'<div class="radio-inner"></div>':'';
+  });
+}
+
+// ── NAVEGACIÓ ─────────────────────────────────────────────────────
+function goStep2(){
+  const dob=document.getElementById('dob').value;
+  const arr=document.getElementById('arrival').value;
+  if(!dob||!arr||!gender||!country){alert(t('errFields'));return;}
+  vaxStatus=''; vaccines=new Set(); mgfStatus='';
+  ['unknown','record','verbal'].forEach(v=>{
+    document.getElementById('vo_'+v).classList.remove('sel');
+    document.getElementById('vr_'+v).style.cssText='';
+    document.getElementById('vr_'+v).innerHTML='';
+  });
+  document.getElementById('vaxListSection').style.display='none';
+  document.getElementById('mgfSection').style.display=gender==='F'?'block':'none';
+  buildVaxGrid();
+  setStep(2);
+}
+
+function goStep1(){setStep(1);}
+
+function setStep(s){
+  [1,2,3].forEach(i=>document.getElementById('step'+i).style.display=i===s?'block':'none');
+  [1,2,3].forEach(i=>{
+    const n=document.getElementById('sn'+i),l=document.getElementById('sl'+i);
+    n.className='step-num '+(i<s?'done':i===s?'active':'todo');
+    n.textContent=i<s?'✓':i;
+    l.className='step-lbl'+(i===s?' active':'');
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── GENERACIÓ D'INFORME ───────────────────────────────────────────
+async function generateReport(){
+  if(!vaxStatus){alert(t('errVax'));return;}
+  setStep(3);
+
+  // Mostra/amaga secció MGF
+  document.getElementById('mgfResultSec').style.display=gender==='F'?'block':'none';
+
+  // Barra de progrés
+  const pb=document.getElementById('progressBar');
+  const pf=document.getElementById('progressFill');
+  pb.style.display='block'; pf.style.width='0%';
+
+  // Resum pacient
+  const dob=document.getElementById('dob').value;
+  const arr=document.getElementById('arrival').value;
+  const age=ageStr();
+  const gLbl=gender==='F'?t('lblF'):t('lblM');
+  const vacList=Array.from(vaccines);
+  const vaxDesc=vaxStatus==='unknown'
+    ?'SENSE documentació vacunal — protocol complet des de zero'
+    :vaxStatus==='verbal'
+      ?`Verbalització familiar. Vacunes referides: ${vacList.length?vacList.join(', '):'cap'}`
+      :`Cartilla vacunal. Vacunes documentades: ${vacList.length?vacList.join(', '):'cap'}`;
+  const mgfLabelMap={yes:lang==='ca'?'Sí confirmada':lang==='es'?'Sí confirmada':'Yes confirmed',no:'No',suspected:lang==='ca'?'Sospita/No explorada':lang==='es'?'Sospecha/No explorada':'Suspected/Not examined',unknown:lang==='ca'?'Desconegut':lang==='es'?'Desconocido':'Unknown'};
+  const mgfLbl=mgfLabelMap[mgfStatus]||'No informat';
+
+  document.getElementById('patAvatar').textContent=gender==='F'?'👧':'👦';
+  document.getElementById('patName').textContent=`${flag(country.code)} ${cname(country)} · ${age}`;
+  document.getElementById('patMeta').innerHTML=`
+    <span>🗓 ${dob}</span><span>✈️ ${arr}</span><span>⚥ ${gLbl}</span>
+    <span>💉 ${vaxStatus==='unknown'?'Sense doc.':vaxStatus}</span>
+    ${gender==='F'&&mgfStatus?`<span>⚠️ MGF: ${mgfLbl}</span>`:''}`;
+
+  // MGF badge
+  if(gender==='F'){
+    const risk=MGF_HIGH.includes(country.code)?'high':MGF_MED.includes(country.code)?'mod':'low';
+    const badge=document.getElementById('mgfBadge');
+    badge.textContent=risk==='high'?t('mgfHigh'):risk==='mod'?t('mgfMod'):t('mgfLow');
+    badge.className='badge '+(risk==='high'?'badge-urgent':risk==='mod'?'badge-mod':'badge-ok');
+  }
+
+  const base=`País: ${cname(country)} (${country.code}, zona: ${country.region}). Edat: ${age}. DOB: ${dob}. Arribada Catalunya: ${arr}. Sexe: ${gLbl}. ${vaxDesc}.`;
+  const sys=buildSysPrompt();
+  const loadTxts=t('loadingTxt');
+
+  // Crides SEQÜENCIALS
+  const sections=[
+    {id:'bodyVax', statusId:'statusVax', loadTxt:loadTxts[0], pct:25,
+     msg:`${base}\n\nAnalitza el calendari vacunal. Indica: 1) Vacunes que probablement té del calendari del seu país; 2) Vacunes que li falten per completar el calendari ASPCAT 2025 per l'edat; 3) Pauta de rescat si escau; 4) Ordre prioritat i intervals mínims; 5) Com interpretar la documentació (tipus: ${vaxStatus}).`},
+    {id:'bodyPapps', statusId:'statusPapps', loadTxt:loadTxts[1], pct:50,
+     msg:`${base}\n\nGenera el pla de seguiment PAPPS/Créixer amb Salut. Indica: 1) Visita PAPPS per edat actual; 2) Calendari visites pendents fins als 14 anys (dates a partir de ${arr}); 3) Contingut de cada visita; 4) Educació per la salut per edat; 5) Aspectes específics en nouvinguts.`},
+    {id:'bodyAnal', statusId:'statusAnal', loadTxt:loadTxts[2], pct:75,
+     msg:`${base}\n\nElabora el pla analític per nouvingut de la zona: ${country.region} (${cname(country)}). Indica: 1) Analítiques bàsiques immediates; 2) Proves específiques per ${country.region} justificades; 3) Serologies i prevalences; 4) PPD/Mantoux o Quantiferó IGRA; 5) Estudi parasitari; 6) Controls de seguiment. Classifica: URGENT / RECOMANAT / OPCIONAL.`},
+  ];
+
+  if(gender==='F') sections.push(
+    {id:'bodyMgf', statusId:'', loadTxt:loadTxts[3], pct:100,
+     msg:`${base}\nEstat MGF: ${mgfLbl}.\n\nAvalua risc MGF per a aquesta nena/adolescent de ${cname(country)}. Indica: 1) Risc (alt/moderat/baix) i prevalença; 2) Actuació clínica per estat: ${mgfLbl}; 3) Si confirmada o sospita: exploració, seqüeles, derivacions urgents; 4) Preguntes clau a la família; 5) Circuit Catalunya (ASSIR, Hospital Clínic, serveis socials, fiscalia); 6) Marc legal; 7) Indicadors d'alerta.`}
+  );
+
+  for(const sec of sections){
+    document.getElementById(sec.id).innerHTML='<div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+    if(sec.statusId) document.getElementById(sec.statusId).textContent=sec.loadTxt;
+    pf.style.width=(sec.pct-20)+'%';
+
+    try{
+      const res=await fetch('/api/claude',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({system:sys, message:sec.msg})
+      });
+      const data=await res.json();
+      if(data.error) throw new Error(data.error);
+      document.getElementById(sec.id).innerHTML=data.content;
+    }catch(e){
+      document.getElementById(sec.id).innerHTML=`<p style="color:#A32D2D"><strong>Error:</strong> ${e.message}</p>`;
+    }
+    if(sec.statusId) document.getElementById(sec.statusId).textContent='';
+    pf.style.width=sec.pct+'%';
+  }
+
+  setTimeout(()=>{ pb.style.display='none'; pf.style.width='0%'; }, 800);
+}
+
+function buildSysPrompt(){
+  return `Ets una pediatra experta en Atenció Primària especialitzada en salut internacional i medicina de l'immigrant a Catalunya. Treballes amb el PAPPS "Créixer amb salut" de la Generalitat de Catalunya 2025 i el calendari ASPCAT 2025.
+
+CALENDARI ASPCAT 2025: 0m VRS; 2m Hexavalent+Rotavirus+PCV+MenB; 4m Hexavalent+Rotavirus+PCV+MenC+MenB; 11m Hexavalent+PCV; 12m MenACWY+MenB+Triple vírica; 15m Varicel·la+HepA; 3a Triple vírica+Varicel·la; 6a DTPa-PI+HepA; 11-12a dTpa+MenACWY+VPH+Varicel·la(si no imm)+HepA(si no imm); 40a Td; 60a+ Grip anual; 65a Td+PCV+Grip+Herpes zòster(x2).
+
+ANALÍTIQUES PER ZONA:
+• SEMPRE: Hemograma+eosinòfils, bioquímica bàsica, ferritina. Serologies: HBsAg+Anti-HBs+Anti-HBc, Anti-HAV IgG, Anti-HCV, VIH (consentiment), RPR+TPHA (sífilis).
+• ÀFRICA SUBSAHARIANA: +Mantoux/Quantiferó, femtes x3, sediment orina (Schistosoma haematobium), Strongyloides IgG, electroforesi Hb, G6PD. Noies: Rubèola IgG.
+• MAGRIB: +Mantoux/Quantiferó, femtes x3, Strongyloides IgG, G6PD, Echinococcus IgG. Noies: Rubèola IgG.
+• ASIA MERIDIONAL: +Mantoux/Quantiferó (alta TB), femtes x3, Strongyloides IgG, G6PD.
+• EXTREM ORIENT: +Mantoux/Quantiferó, femtes x3, Strongyloides IgG, G6PD.
+• AMÈRICA LLATINA: +Trypanosoma cruzi IgG (Chagas), Strongyloides IgG, Mantoux (alta TB: Haití, Perú, Bolívia), femtes x3.
+• EUROPA DE L'EST: +Mantoux/Quantiferó, femtes x3. Noies: Rubèola IgG.
+• ORIENT MITJÀ: +Mantoux/Quantiferó, femtes x3, Strongyloides IgG, G6PD.
+
+PROTOCOL MGF (NOMÉS SEXE FEMENÍ):
+Risc ALT: Guinea, Sierra Leone, Somàlia, Djibouti, Mali, Eritrea, Etiòpia, Sudan, Sudan del Sud, Egipte, Senegal, Libèria, Mauritània, Burkina Faso, Gàmbia, Costa d'Ivori, Guinea Bissau, Níger, Nigèria, Txad, Rep. Centreafricana.
+Risc MODERAT: Kenya, Tanzània, Uganda, Rwanda, Camerun, Gabon, Moçambic, Malawi, Zàmbia, Iemen, Tunísia, Marroc.
+Circuits: ASSIR, Unitat MGF Hospital Clínic Barcelona, serveis socials, fiscalia de menors.
+Marc legal: Art. 149 CP espanyol (fins 12 anys presó), Llei 5/2008 Catalunya.
+
+Respon en ${lang==='ca'?'català':lang==='es'?'castellà':'anglès'}. Format HTML simple: <h3>, <ul>, <li>, <strong>. NO taules HTML. Concís i clínicament pràctic. Màx 350 paraules per secció.`;
+}
+
+// ── RESET ─────────────────────────────────────────────────────────
+function resetApp(){
+  gender=''; country=null; vaxStatus=''; vaccines=new Set(); mgfStatus='';
+  document.getElementById('dob').value='';
+  document.getElementById('arrival').value=new Date().toISOString().split('T')[0];
+  document.getElementById('countryInput').value='';
+  document.getElementById('agePill').style.display='none';
+  ['M','F'].forEach(v=>{document.getElementById('g'+v).classList.remove('sel');document.getElementById('rd'+v).style.cssText='';document.getElementById('rd'+v).innerHTML='';});
+  setStep(1);
+}
+
+// Init
+document.getElementById('arrival').value=new Date().toISOString().split('T')[0];
+buildVaxGrid();
+</script>
+</body>
+</html>
