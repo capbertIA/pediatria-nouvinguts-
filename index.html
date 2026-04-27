@@ -897,4 +897,50 @@ Indicació cribratge:
 Protocol per edat i situació:
 A) NADÓ DE MARE POSITIVA A T. cruzi:
 - Revisar si s'ha realitzat estudi al centre maternal. Si no s'ha realitzat:
-- Als 9-12 mesos d
+- Als 9-12 mesos de vida: serologia Trypanosoma cruzi
+  · Si negativa → descartada la infecció
+  · Si positiva → repetir serologia amb antigen diferent:
+    - 2a serologia positiva → iniciar tractament antiparasitari
+    - 2a serologia negativa/indeterminada → esperar 2 mesos i repetir. Si positiva als 2 mesos → tractament
+
+B) GERMANS DE MARE POSITIVA A T. cruzi:
+- Serologia Trypanosoma cruzi
+  · Si negativa → descartada la infecció
+  · Si positiva → repetir serologia amb antigen diferent:
+    - 2a positiva → tractament antiparasitari
+    - 2a negativa/indeterminada → esperar 2 mesos i repetir
+
+C) ALTRES INFANTS D'AMÈRICA LLATINA (mare de país endèmic, estada >1 mes):
+- Serologia Trypanosoma cruzi IgG
+- Si no es pot fer PCR ni serologia → derivar al centre de referència (Hospital Clínic Barcelona - Unitat de Medicina Tropical)
+
+Marc: Protocol de cribratge, diagnòstic i tractament de la malaltia de Chagas en dones embarassades llatinoamericanes i en els seus fills (Programa de prevenció i control de la malaltia de Chagas congènita a Catalunya - Departament de Salut Generalitat de Catalunya).
+• EUROPA DE L'EST: +Mantoux/Quantiferó, femtes x3. Noies: Rubèola IgG.
+• ORIENT MITJÀ: +Mantoux/Quantiferó, femtes x3, Strongyloides IgG, G6PD.
+
+PROTOCOL MGF (NOMÉS SEXE FEMENÍ):
+Risc ALT: Guinea, Sierra Leone, Somàlia, Djibouti, Mali, Eritrea, Etiòpia, Sudan, Sudan del Sud, Egipte, Senegal, Libèria, Mauritània, Burkina Faso, Gàmbia, Costa d'Ivori, Guinea Bissau, Níger, Nigèria, Txad, Rep. Centreafricana.
+Risc MODERAT: Kenya, Tanzània, Uganda, Rwanda, Camerun, Gabon, Moçambic, Malawi, Zàmbia, Iemen, Tunísia, Marroc.
+Circuits: ASSIR, Unitat MGF Hospital Clínic Barcelona, serveis socials, fiscalia de menors.
+Marc legal: Art. 149 CP espanyol (fins 12 anys presó), Llei 5/2008 Catalunya.
+
+Respon en ${lang==='ca'?'català':lang==='es'?'castellà':'anglès'}. Format HTML simple: <h3>, <ul>, <li>, <strong>. NO taules HTML. Concís i clínicament pràctic. Màx 350 paraules per secció.`;
+}
+
+// ── RESET ─────────────────────────────────────────────────────────
+function resetApp(){
+  gender=''; country=null; vaxStatus=''; vaccines=new Set(); mgfStatus=''; doseState={};
+  document.getElementById('dob').value='';
+  document.getElementById('arrival').value=new Date().toISOString().split('T')[0];
+  document.getElementById('countryInput').value='';
+  document.getElementById('agePill').style.display='none';
+  ['M','F'].forEach(v=>{document.getElementById('g'+v).classList.remove('sel');document.getElementById('rd'+v).style.cssText='';document.getElementById('rd'+v).innerHTML='';});
+  setStep(1);
+}
+
+// Init
+document.getElementById('arrival').value=new Date().toISOString().split('T')[0];
+buildVaxGrid();
+</script>
+</body>
+</html>
