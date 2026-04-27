@@ -835,7 +835,15 @@ async function generateReport(){
     {id:'bodyPapps', statusId:'statusPapps', loadTxt:loadTxts[1], pct:50,
      msg:`${base}\n\nGenera el pla de seguiment PAPPS/Créixer amb Salut per a aquest pacient. NO menciones vacunes ni calendari vacunal. NO menciones analítiques ni proves de laboratori (aquests temes ja es tracten en apartats específics). Centra't exclusivament en: 1) A quina visita PAPPS s'integra per edat actual i quin és el contingut d'aquesta primera visita d'acollida; 2) Calendari de visites de revisió pendents fins als 14 anys amb dates aproximades a partir de ${arr}; 3) Contingut de cada visita: antropometria i corbes de creixement, desenvolupament psicomotor, visió, audició, tensió arterial, exploració física per edat; 4) Educació per la salut específica per l'edat segons la taula de consells PAPPS (alimentació, activitat física, pantalles, higiene, seguretat, prevenció de riscos); 5) Aspectes específics a monitorar en població nouvinguda (adaptació, escolarització, salut mental, detecció de situacions de vulnerabilitat).`},
     {id:'bodyAnal', statusId:'statusAnal', loadTxt:loadTxts[2], pct:75,
-     msg:`${base}\n\nElabora el pla analític per nouvingut de la zona: ${country.region} (${cname(country)}). Indica: 1) Analítiques bàsiques immediates; 2) Proves específiques per ${country.region} justificades; 3) Serologies i prevalences; 4) PPD/Mantoux o Quantiferó IGRA; 5) Estudi parasitari; 6) Controls de seguiment. Classifica: URGENT / RECOMANAT / OPCIONAL.`},
+     msg:(()=>{
+       const arrDate=new Date(arr);
+       const now=new Date();
+       const weeksSinceArrival=Math.floor((now-arrDate)/(1000*60*60*24*7));
+       const tbWindow=weeksSinceArrival>=12
+         ?`✅ Han passat ${weeksSinceArrival} setmanes des de l'arribada (>${12} setmanes): ES POT fer el cribratge de TB (Mantoux/Quantiferó/IGRA) amb garanties. El resultat serà vàlid.`
+         :`⚠️ Només han passat ${weeksSinceArrival} setmanes des de l'arribada (mínim necessari: 12 setmanes): ENCARA NO es pot fer el cribratge de TB amb garanties. Cal esperar fins al ${new Date(arrDate.getTime()+12*7*24*60*60*1000).toLocaleDateString('ca-ES')} per fer Mantoux/Quantiferó/IGRA amb valor diagnòstic fiable. Programa la prova per a aquesta data.`;
+       return `${base}\n\nElabora el pla analític per nouvingut de la zona: ${country.region} (${cname(country)}). Indica: 1) Analítiques bàsiques immediates; 2) Proves específiques per ${country.region} justificades; 3) Serologies i prevalences; 4) Estudi parasitari específic; 5) Controls de seguiment. Classifica cada prova: URGENT / RECOMANAT / OPCIONAL.\n\nPEL CRIBRATGE DE TUBERCULOSI (Mantoux/Quantiferó/IGRA): ${tbWindow}. Recorda que cal un mínim de 12 setmanes (3 mesos) des del darrer possible contacte (arribada al país) perquè la prova tingui valor diagnòstic. Explica-ho clarament a l'apartat de TB.`;
+     })()},
   ];
 
   if(gender==='F') sections.push(
@@ -878,33 +886,15 @@ ANALÍTIQUES PER ZONA:
 • MAGRIB: +Mantoux/Quantiferó, femtes x3, Strongyloides IgG, G6PD, Echinococcus IgG. Noies: Rubèola IgG.
 • ASIA MERIDIONAL: +Mantoux/Quantiferó (alta TB), femtes x3, Strongyloides IgG, G6PD.
 • EXTREM ORIENT: +Mantoux/Quantiferó, femtes x3, Strongyloides IgG, G6PD.
-• AMÈRICA LLATINA: +Trypanosoma cruzi IgG (Chagas), Strongyloides IgG, Mantoux (alta TB: Haití, Perú, Bolívia), femtes x3.
-• EUROPA DE L'EST: +Mantoux/Quantiferó, femtes x3. Noies: Rubèola IgG.
-• ORIENT MITJÀ: +Mantoux/Quantiferó, femtes x3, Strongyloides IgG, G6PD.
+• AMÈRICA LLATINA: +Trypanosoma cruzi IgG (Chagas — vegeu protocol detallat), Strongyloides IgG, Mantoux (alta TB: Haití, Perú, Bolívia), femtes x3.
 
-PROTOCOL MGF (NOMÉS SEXE FEMENÍ):
-Risc ALT: Guinea, Sierra Leone, Somàlia, Djibouti, Mali, Eritrea, Etiòpia, Sudan, Sudan del Sud, Egipte, Senegal, Libèria, Mauritània, Burkina Faso, Gàmbia, Costa d'Ivori, Guinea Bissau, Níger, Nigèria, Txad, Rep. Centreafricana.
-Risc MODERAT: Kenya, Tanzània, Uganda, Rwanda, Camerun, Gabon, Moçambic, Malawi, Zàmbia, Iemen, Tunísia, Marroc.
-Circuits: ASSIR, Unitat MGF Hospital Clínic Barcelona, serveis socials, fiscalia de menors.
-Marc legal: Art. 149 CP espanyol (fins 12 anys presó), Llei 5/2008 Catalunya.
+PROTOCOL DETALLAT MALALTIA DE CHAGAS (Trypanosoma cruzi) — APLICAR SEMPRE EN PACIENTS D'AMÈRICA LLATINA CONTINENTAL (excepte illes del Carib):
+Indicació cribratge:
+- Infants nascuts de dones originàries de països endèmics (Amèrica Central i del Sud, excepte illes del Carib)
+- Estades superiors a 1 mes en àrees endèmiques amb presència vectorial
+- Germans nascuts de la mateixa mare positiva a T. cruzi que visquin a Catalunya
 
-Respon en ${lang==='ca'?'català':lang==='es'?'castellà':'anglès'}. Format HTML simple: <h3>, <ul>, <li>, <strong>. NO taules HTML. Concís i clínicament pràctic. Màx 350 paraules per secció.`;
-}
-
-// ── RESET ─────────────────────────────────────────────────────────
-function resetApp(){
-  gender=''; country=null; vaxStatus=''; vaccines=new Set(); mgfStatus=''; doseState={};
-  document.getElementById('dob').value='';
-  document.getElementById('arrival').value=new Date().toISOString().split('T')[0];
-  document.getElementById('countryInput').value='';
-  document.getElementById('agePill').style.display='none';
-  ['M','F'].forEach(v=>{document.getElementById('g'+v).classList.remove('sel');document.getElementById('rd'+v).style.cssText='';document.getElementById('rd'+v).innerHTML='';});
-  setStep(1);
-}
-
-// Init
-document.getElementById('arrival').value=new Date().toISOString().split('T')[0];
-buildVaxGrid();
-</script>
-</body>
-</html>
+Protocol per edat i situació:
+A) NADÓ DE MARE POSITIVA A T. cruzi:
+- Revisar si s'ha realitzat estudi al centre maternal. Si no s'ha realitzat:
+- Als 9-12 mesos d
