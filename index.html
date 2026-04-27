@@ -76,13 +76,22 @@ input:focus{outline:none;border-color:var(--teal4);box-shadow:0 0 0 3px rgba(29,
 .vax-opt-lbl{font-weight:500;font-size:14px}
 .vax-opt-hint{font-size:12px;color:var(--gray6);margin-top:2px}
 /* Vax checkboxes */
-.vax-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;margin-bottom:24px}
-.vax-cb{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--gray1);border-radius:9px;cursor:pointer;user-select:none;transition:all .15s}
-.vax-cb:hover,.vax-cb.chk{border-color:var(--green4);background:var(--green0)}
-.cb-box{width:18px;height:18px;border-radius:5px;border:2px solid var(--gray1);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s;font-size:11px;font-weight:700;color:#fff}
-.vax-cb.chk .cb-box{border-color:var(--green4);background:var(--green4)}
-.vax-name{font-size:13px;font-weight:500;color:var(--gray8)}
-.vax-hint-txt{font-size:11px;color:var(--gray4)}
+.vax-grid{display:flex;flex-direction:column;gap:8px;margin-bottom:24px}
+.vax-row{background:#fff;border:1px solid var(--gray1);border-radius:11px;padding:12px 14px;transition:border-color .15s}
+.vax-row:hover{border-color:var(--teal1)}
+.vax-row-name{font-size:13px;font-weight:600;color:var(--gray8);margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.vax-row-note{font-size:11px;color:var(--amber6);background:var(--amber0);padding:2px 8px;border-radius:4px}
+.vax-doses{display:flex;flex-wrap:wrap;gap:6px}
+.dose-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 12px;border-radius:8px;border:1.5px solid var(--gray1);cursor:pointer;transition:all .15s;user-select:none;min-width:54px;background:#fff}
+.dose-btn:hover{border-color:var(--teal4);background:var(--teal0)}
+.dose-label{font-size:12px;font-weight:600;color:var(--gray6)}
+.dose-status{font-size:15px;line-height:1.2}
+.dose-btn.ok{border-color:var(--green4);background:var(--green0)}
+.dose-btn.ok .dose-label{color:var(--green8)}
+.dose-btn.bad{border-color:#E24B4A;background:#FCEBEB}
+.dose-btn.bad .dose-label{color:#A32D2D}
+.dose-legend{display:flex;gap:14px;font-size:11px;color:var(--gray6);margin-bottom:12px;flex-wrap:wrap;align-items:center}
+.dose-legend span{display:flex;align-items:center;gap:4px}
 /* MGF block */
 .mgf-block{margin-top:20px;padding:16px;background:var(--red0);border:1px solid var(--red1);border-radius:12px}
 .mgf-block h3{font-size:14px;font-weight:600;color:var(--red8);margin-bottom:12px}
@@ -238,7 +247,11 @@ input:focus{outline:none;border-color:var(--teal4);box-shadow:0 0 0 3px rgba(29,
     </div>
 
     <div id="vaxListSection" style="display:none">
-      <div class="lbl" id="lblVaxSel" style="margin-bottom:10px">Marca les vacunes administrades (o comunicades per la família):</div>
+      <div class="lbl" id="lblVaxSel" style="margin-bottom:8px">Marca les vacunes administrades (o comunicades per la família):</div>
+      <div class="dose-legend">
+        <span>Clica cada dosi per canviar l'estat:</span>
+        <span>⬜ No posada &nbsp; ✅ Posada correctament &nbsp; ⚠️ Fora de pauta</span>
+      </div>
       <div class="vax-grid" id="vaxGrid"></div>
     </div>
 
@@ -415,27 +428,107 @@ const COUNTRIES = [
   {code:'YE',ca:'Iemen',es:'Yemen',en:'Yemen',region:'Orient Mitjà'},
   {code:'ZM',ca:'Zàmbia',es:'Zambia',en:'Zambia',region:'Àfrica Subsahariana'},
   {code:'ZW',ca:'Zimbabwe',es:'Zimbabue',en:'Zimbabwe',region:'Àfrica Subsahariana'},
+  // Europa Occidental
+  {code:'DE',ca:'Alemanya',es:'Alemania',en:'Germany',region:'Europa Occidental'},
+  {code:'AT',ca:'Àustria',es:'Austria',en:'Austria',region:'Europa Occidental'},
+  {code:'BE',ca:'Bèlgica',es:'Bélgica',en:'Belgium',region:'Europa Occidental'},
+  {code:'BG',ca:'Bulgària',es:'Bulgaria',en:'Bulgaria',region:'Europa de lEst'},
+  {code:'CY',ca:'Xipre',es:'Chipre',en:'Cyprus',region:'Europa Occidental'},
+  {code:'DK',ca:'Dinamarca',es:'Dinamarca',en:'Denmark',region:'Europa Occidental'},
+  {code:'SK',ca:'Eslovàquia',es:'Eslovaquia',en:'Slovakia',region:'Europa de lEst'},
+  {code:'SI',ca:'Eslovènia',es:'Eslovenia',en:'Slovenia',region:'Europa de lEst'},
+  {code:'ES',ca:'Espanya',es:'España',en:'Spain',region:'Europa Occidental'},
+  {code:'EE',ca:'Estònia',es:'Estonia',en:'Estonia',region:'Europa de lEst'},
+  {code:'FI',ca:'Finlàndia',es:'Finlandia',en:'Finland',region:'Europa Occidental'},
+  {code:'FR',ca:'França',es:'Francia',en:'France',region:'Europa Occidental'},
+  {code:'GR',ca:'Grècia',es:'Grecia',en:'Greece',region:'Europa Occidental'},
+  {code:'HU',ca:'Hongria',es:'Hungría',en:'Hungary',region:'Europa de lEst'},
+  {code:'IE',ca:'Irlanda',es:'Irlanda',en:'Ireland',region:'Europa Occidental'},
+  {code:'IS',ca:'Islàndia',es:'Islandia',en:'Iceland',region:'Europa Occidental'},
+  {code:'IT',ca:'Itàlia',es:'Italia',en:'Italy',region:'Europa Occidental'},
+  {code:'LV',ca:'Letònia',es:'Letonia',en:'Latvia',region:'Europa de lEst'},
+  {code:'LT',ca:'Lituània',es:'Lituania',en:'Lithuania',region:'Europa de lEst'},
+  {code:'LU',ca:'Luxemburg',es:'Luxemburgo',en:'Luxembourg',region:'Europa Occidental'},
+  {code:'MT',ca:'Malta',es:'Malta',en:'Malta',region:'Europa Occidental'},
+  {code:'NO',ca:'Noruega',es:'Noruega',en:'Norway',region:'Europa Occidental'},
+  {code:'NL',ca:'Països Baixos',es:'Países Bajos',en:'Netherlands',region:'Europa Occidental'},
+  {code:'PL',ca:'Polònia',es:'Polonia',en:'Poland',region:'Europa de lEst'},
+  {code:'PT',ca:'Portugal',es:'Portugal',en:'Portugal',region:'Europa Occidental'},
+  {code:'GB',ca:'Regne Unit',es:'Reino Unido',en:'United Kingdom',region:'Europa Occidental'},
+  {code:'CZ',ca:'República Txeca',es:'República Checa',en:'Czech Republic',region:'Europa de lEst'},
+  {code:'SE',ca:'Suècia',es:'Suecia',en:'Sweden',region:'Europa Occidental'},
+  {code:'CH',ca:'Suïssa',es:'Suiza',en:'Switzerland',region:'Europa Occidental'},
+  // Àsia Oriental i Oceania
+  {code:'JP',ca:'Japó',es:'Japón',en:'Japan',region:'Extrem Orient'},
+  {code:'KR',ca:'Corea del Sud',es:'Corea del Sur',en:'South Korea',region:'Extrem Orient'},
+  {code:'KP',ca:'Corea del Nord',es:'Corea del Norte',en:'North Korea',region:'Extrem Orient'},
+  {code:'MN',ca:'Mongòlia',es:'Mongolia',en:'Mongolia',region:'Extrem Orient'},
+  // Amèrica del Nord
+  {code:'US',ca:'Estats Units',es:'Estados Unidos',en:'United States',region:'Amèrica del Nord'},
+  {code:'CA',ca:'Canadà',es:'Canadá',en:'Canada',region:'Amèrica del Nord'},
+  // Oceania
+  {code:'AU',ca:'Austràlia',es:'Australia',en:'Australia',region:'Oceania'},
+  {code:'NZ',ca:'Nova Zelanda',es:'Nueva Zelanda',en:'New Zealand',region:'Oceania'},
+  {code:'PG',ca:'Papua Nova Guinea',es:'Papúa Nueva Guinea',en:'Papua New Guinea',region:'Oceania'},
+  {code:'FJ',ca:'Fiji',es:'Fiyi',en:'Fiji',region:'Oceania'},
+  // Àfrica del Nord i altres
+  {code:'CV',ca:'Cap Verd',es:'Cabo Verde',en:'Cape Verde',region:'Àfrica Subsahariana'},
+  {code:'GQ',ca:'Guinea Equatorial',es:'Guinea Ecuatorial',en:'Equatorial Guinea',region:'Àfrica Subsahariana'},
+  {code:'ST',ca:'São Tomé i Príncipe',es:'Santo Tomé y Príncipe',en:'São Tomé and Príncipe',region:'Àfrica Subsahariana'},
+  {code:'SC',ca:'Seychelles',es:'Seychelles',en:'Seychelles',region:'Àfrica Subsahariana'},
+  {code:'MU',ca:'Maurici',es:'Mauricio',en:'Mauritius',region:'Àfrica Subsahariana'},
+  // Orient Mitjà
+  {code:'AF',ca:'Afganistan',es:'Afganistán',en:'Afghanistan',region:'Asia Meridional'},
+  {code:'IL',ca:'Israel',es:'Israel',en:'Israel',region:'Orient Mitjà'},
+  {code:'SA',ca:'Aràbia Saudita',es:'Arabia Saudita',en:'Saudi Arabia',region:'Orient Mitjà'},
+  {code:'AE',ca:'Emirats Àrabs Units',es:'Emiratos Árabes Unidos',en:'UAE',region:'Orient Mitjà'},
+  {code:'QA',ca:'Qatar',es:'Catar',en:'Qatar',region:'Orient Mitjà'},
+  {code:'KW',ca:'Kuwait',es:'Kuwait',en:'Kuwait',region:'Orient Mitjà'},
+  {code:'BH',ca:'Bahrain',es:'Baréin',en:'Bahrain',region:'Orient Mitjà'},
+  {code:'OM',ca:'Oman',es:'Omán',en:'Oman',region:'Orient Mitjà'},
 ];
 
 const MGF_HIGH = ['GN','SL','SO','DJ','ML','ER','ET','SD','SS','EG','SN','LR','MR','BF','GM','CI','GW','NE','NG','TD','CF'];
 const MGF_MED  = ['CD','KE','TZ','UG','RW','CM','GA','MZ','MW','ZM','YE','TN','MA'];
 
 const VACCINES = [
-  {id:'hexavalent',ca:'Hexavalent (DTPa+HBV+Hib+IPV)',es:'Hexavalente',en:'Hexavalent',hint:'2m, 4m, 11m'},
-  {id:'rotavirus', ca:'Rotavirus',es:'Rotavirus',en:'Rotavirus',hint:'2m, 4m'},
-  {id:'pneumococ', ca:'Pneumococ conjugada (PCV)',es:'Neumococo conjugada',en:'Pneumococcal (PCV)',hint:'2m, 4m, 11m'},
-  {id:'menb',      ca:'Meningococ B',es:'Meningococo B',en:'Meningococcal B',hint:'2m, 4m, 12m'},
-  {id:'menc',      ca:'Meningococ C conjugada',es:'Meningococo C',en:'Meningococcal C',hint:'4m'},
-  {id:'menacwy',   ca:'Meningococ ACWY tetravalent',es:'Meningococo ACWY',en:'Meningococcal ACWY',hint:'12m, 11-12a'},
-  {id:'triple',    ca:'Triple vírica (SRP)',es:'Triple vírica (SRP)',en:'MMR',hint:'12m, 3a'},
-  {id:'varicella', ca:'Varicel·la',es:'Varicela',en:'Varicella',hint:'15m, 3a'},
-  {id:'hepa',      ca:'Hepatitis A',es:'Hepatitis A',en:'Hepatitis A',hint:'15m, 6a'},
-  {id:'hpv',       ca:'VPH (Papil·loma humà)',es:'VPH',en:'HPV',hint:'11-12a'},
-  {id:'dtpapi',    ca:'DTPa-PI (6 anys)',es:'DTPa-PI (6 años)',en:'DTPa-IPV (6y)',hint:'6a'},
-  {id:'dtpa',      ca:'dTpa (11-12 anys)',es:'dTpa (11-12 años)',en:'dTpa (11-12y)',hint:'11-12a'},
-  {id:'td',        ca:'Td (Adults)',es:'Td (Adultos)',en:'Td (Adults)',hint:'40a, 65a'},
-  {id:'grip',      ca:'Grip (anual)',es:'Gripe (anual)',en:'Influenza (annual)',hint:'6m-59m, ≥60a'},
-  {id:'herpes',    ca:'Herpes zòster',es:'Herpes zóster',en:'Herpes zoster',hint:'65a, 80a'},
+  // Calendari ASPCAT 2025
+  {id:'bcg', ca:'BCG (Tuberculosi)', es:'BCG (Tuberculosis)', en:'BCG (Tuberculosis)',
+   doses:[{id:'bcg_0m',ca:'Néixer',es:'Nacimiento',en:'Birth'}],
+   note:{ca:'No al calendari català sistemàtic',es:'No en el calendario catalán sistemático',en:'Not in Catalan systematic schedule'}},
+  {id:'hexavalent', ca:'Hexavalent (DTPa+HBV+Hib+IPV)', es:'Hexavalente (DTPa+HBV+Hib+IPV)', en:'Hexavalent (DTPa+HBV+Hib+IPV)',
+   doses:[{id:'hex_2m',ca:'2m',es:'2m',en:'2m'},{id:'hex_4m',ca:'4m',es:'4m',en:'4m'},{id:'hex_11m',ca:'11m',es:'11m',en:'11m'}]},
+  {id:'pentavalent', ca:'Pentavalent (DTPa+Hib+IPV, sense HBV)', es:'Pentavalente (DTPa+Hib+IPV, sin HBV)', en:'Pentavalent (DTPa+Hib+IPV, no HBV)',
+   doses:[{id:'penta_2m',ca:'2m',es:'2m',en:'2m'},{id:'penta_4m',ca:'4m',es:'4m',en:'4m'},{id:'penta_6m',ca:'6m',es:'6m',en:'6m'},{id:'penta_18m',ca:'18m',es:'18m',en:'18m'}],
+   note:{ca:'Afegir HBV per completar pauta hexavalent',es:'Añadir HBV para completar pauta hexavalente',en:'Add HBV to complete hexavalent schedule'}},
+  {id:'rotavirus', ca:'Rotavirus', es:'Rotavirus', en:'Rotavirus',
+   doses:[{id:'rota_2m',ca:'2m',es:'2m',en:'2m'},{id:'rota_4m',ca:'4m',es:'4m',en:'4m'}]},
+  {id:'pneumococ', ca:'Pneumococ conjugada (PCV)', es:'Neumococo conjugada (PCV)', en:'Pneumococcal conjugate (PCV)',
+   doses:[{id:'pcv_2m',ca:'2m',es:'2m',en:'2m'},{id:'pcv_4m',ca:'4m',es:'4m',en:'4m'},{id:'pcv_11m',ca:'11m',es:'11m',en:'11m'}]},
+  {id:'menb', ca:'Meningococ B', es:'Meningococo B', en:'Meningococcal B',
+   doses:[{id:'menb_2m',ca:'2m',es:'2m',en:'2m'},{id:'menb_4m',ca:'4m',es:'4m',en:'4m'},{id:'menb_12m',ca:'12m',es:'12m',en:'12m'}]},
+  {id:'menc', ca:'Meningococ C conjugada', es:'Meningococo C conjugada', en:'Meningococcal C conjugate',
+   doses:[{id:'menc_4m',ca:'4m',es:'4m',en:'4m'}]},
+  {id:'menacwy', ca:'Meningococ ACWY tetravalent', es:'Meningococo ACWY tetravalente', en:'Meningococcal ACWY',
+   doses:[{id:'menacwy_12m',ca:'12m',es:'12m',en:'12m'},{id:'menacwy_12a',ca:'11-12a',es:'11-12a',en:'11-12y'}]},
+  {id:'triple', ca:'Triple vírica (SRP)', es:'Triple vírica (SRP)', en:'MMR (Measles-Mumps-Rubella)',
+   doses:[{id:'srp_12m',ca:'12m',es:'12m',en:'12m'},{id:'srp_3a',ca:'3a',es:'3a',en:'3y'}]},
+  {id:'varicella', ca:'Varicel·la', es:'Varicela', en:'Varicella',
+   doses:[{id:'var_15m',ca:'15m',es:'15m',en:'15m'},{id:'var_3a',ca:'3a',es:'3a',en:'3y'}]},
+  {id:'hepa', ca:'Hepatitis A', es:'Hepatitis A', en:'Hepatitis A',
+   doses:[{id:'hepa_15m',ca:'15m',es:'15m',en:'15m'},{id:'hepa_6a',ca:'6a',es:'6a',en:'6y'}]},
+  {id:'hpv', ca:'VPH (Papil·loma humà)', es:'VPH (Papiloma humano)', en:'HPV (Human Papillomavirus)',
+   doses:[{id:'hpv_1',ca:'1a dosi',es:'1a dosis',en:'Dose 1'},{id:'hpv_2',ca:'2a dosi',es:'2a dosis',en:'Dose 2'}]},
+  {id:'dtpapi', ca:'DTPa-PI (6 anys)', es:'DTPa-PI (6 años)', en:'DTPa-IPV (6 years)',
+   doses:[{id:'dtpapi_6a',ca:'6a',es:'6a',en:'6y'}]},
+  {id:'dtpa', ca:'dTpa (11-12 anys)', es:'dTpa (11-12 años)', en:'dTpa (11-12 years)',
+   doses:[{id:'dtpa_12a',ca:'11-12a',es:'11-12a',en:'11-12y'}]},
+  {id:'td', ca:'Td (Adults)', es:'Td (Adultos)', en:'Td (Adults)',
+   doses:[{id:'td_40a',ca:'40a',es:'40a',en:'40y'},{id:'td_65a',ca:'65a',es:'65a',en:'65y'}]},
+  {id:'grip', ca:'Grip (anual)', es:'Gripe (anual)', en:'Influenza (annual)',
+   doses:[{id:'grip_1',ca:'Última dosi',es:'Última dosis',en:'Last dose'}]},
+  {id:'herpes', ca:'Herpes zòster', es:'Herpes zóster', en:'Herpes zoster',
+   doses:[{id:'hz_1',ca:'1a dosi',es:'1a dosis',en:'Dose 1'},{id:'hz_2',ca:'2a dosi',es:'2a dosis',en:'Dose 2'}]},
 ];
 
 const T = {
@@ -597,23 +690,55 @@ function selVaxStatus(val){
 }
 
 // ── VACUNES ───────────────────────────────────────────────────────
+// doseState: map of doseId -> 'ok' | 'bad' | undefined
+let doseState = {};
+
 function buildVaxGrid(){
   const g=document.getElementById('vaxGrid');
   if(!g)return;
-  g.innerHTML=VACCINES.map(v=>`
-    <div class="vax-cb${vaccines.has(v.id)?' chk':''}" id="vc_${v.id}" onclick="toggleVax('${v.id}')">
-      <div class="cb-box">${vaccines.has(v.id)?'✓':''}</div>
-      <div>
-        <div class="vax-name">${v[lang]||v.ca}</div>
-        <div class="vax-hint-txt">${v.hint}</div>
-      </div>
-    </div>`).join('');
+  g.innerHTML=VACCINES.map(v=>{
+    const name=v[lang]||v.ca;
+    const note=v.note?`<span class="vax-row-note">${v.note[lang]||v.note.ca}</span>`:'';
+    const doses=v.doses.map(d=>{
+      const st=doseState[d.id]||'none';
+      const icon=st==='ok'?'✅':st==='bad'?'⚠️':'⬜';
+      const cls=st==='ok'?'ok':st==='bad'?'bad':'';
+      return `<div class="dose-btn ${cls}" id="db_${d.id}" onclick="cycleDose('${d.id}')">
+        <div class="dose-status">${icon}</div>
+        <div class="dose-label">${d[lang]||d.ca}</div>
+      </div>`;
+    }).join('');
+    return `<div class="vax-row">
+      <div class="vax-row-name">${name} ${note}</div>
+      <div class="vax-doses">${doses}</div>
+    </div>`;
+  }).join('');
 }
 
-function toggleVax(id){
-  vaccines.has(id)?vaccines.delete(id):vaccines.add(id);
-  const el=document.getElementById('vc_'+id);
-  if(el){el.classList.toggle('chk',vaccines.has(id));el.querySelector('.cb-box').textContent=vaccines.has(id)?'✓':'';}
+function cycleDose(doseId){
+  const cur=doseState[doseId]||'none';
+  doseState[doseId]=cur==='none'?'ok':cur==='ok'?'bad':'none';
+  const btn=document.getElementById('db_'+doseId);
+  if(!btn)return;
+  const st=doseState[doseId];
+  btn.className='dose-btn'+(st==='ok'?' ok':st==='bad'?' bad':'');
+  btn.querySelector('.dose-status').textContent=st==='ok'?'✅':st==='bad'?'⚠️':'⬜';
+}
+
+function getDosesSummary(){
+  // Build human-readable summary of dose states for the AI prompt
+  const lines=[];
+  VACCINES.forEach(v=>{
+    const name=v[lang]||v.ca;
+    const doseParts=v.doses.map(d=>{
+      const st=doseState[d.id]||'none';
+      if(st==='none')return null;
+      const lbl=d[lang]||d.ca;
+      return `${lbl}: ${st==='ok'?'✅ correcta':'⚠️ fora de pauta'}`;
+    }).filter(Boolean);
+    if(doseParts.length>0) lines.push(`${name} → ${doseParts.join(', ')}`);
+  });
+  return lines.length>0?lines.join('; '):'Cap dosi marcada';
 }
 
 // ── MGF ───────────────────────────────────────────────────────────
@@ -633,7 +758,7 @@ function goStep2(){
   const dob=document.getElementById('dob').value;
   const arr=document.getElementById('arrival').value;
   if(!dob||!arr||!gender||!country){alert(t('errFields'));return;}
-  vaxStatus=''; vaccines=new Set(); mgfStatus='';
+  vaxStatus=''; vaccines=new Set(); mgfStatus=''; doseState={};
   ['unknown','record','verbal'].forEach(v=>{
     document.getElementById('vo_'+v).classList.remove('sel');
     document.getElementById('vr_'+v).style.cssText='';
@@ -676,12 +801,11 @@ async function generateReport(){
   const arr=document.getElementById('arrival').value;
   const age=ageStr();
   const gLbl=gender==='F'?t('lblF'):t('lblM');
-  const vacList=Array.from(vaccines);
   const vaxDesc=vaxStatus==='unknown'
     ?'SENSE documentació vacunal — protocol complet des de zero'
     :vaxStatus==='verbal'
-      ?`Verbalització familiar. Vacunes referides: ${vacList.length?vacList.join(', '):'cap'}`
-      :`Cartilla vacunal. Vacunes documentades: ${vacList.length?vacList.join(', '):'cap'}`;
+      ?`Verbalització familiar (fiabilitat baixa). Dosis referides: ${getDosesSummary()}`
+      :`Cartilla vacunal (documentació escrita). Dosis documentades: ${getDosesSummary()}`;
   const mgfLabelMap={yes:lang==='ca'?'Sí confirmada':lang==='es'?'Sí confirmada':'Yes confirmed',no:'No',suspected:lang==='ca'?'Sospita/No explorada':lang==='es'?'Sospecha/No explorada':'Suspected/Not examined',unknown:lang==='ca'?'Desconegut':lang==='es'?'Desconocido':'Unknown'};
   const mgfLbl=mgfLabelMap[mgfStatus]||'No informat';
 
@@ -769,7 +893,7 @@ Respon en ${lang==='ca'?'català':lang==='es'?'castellà':'anglès'}. Format HTM
 
 // ── RESET ─────────────────────────────────────────────────────────
 function resetApp(){
-  gender=''; country=null; vaxStatus=''; vaccines=new Set(); mgfStatus='';
+  gender=''; country=null; vaxStatus=''; vaccines=new Set(); mgfStatus=''; doseState={};
   document.getElementById('dob').value='';
   document.getElementById('arrival').value=new Date().toISOString().split('T')[0];
   document.getElementById('countryInput').value='';
