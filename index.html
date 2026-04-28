@@ -90,6 +90,10 @@ input:focus{outline:none;border-color:var(--teal4);box-shadow:0 0 0 3px rgba(29,
 .dose-btn.ok .dose-label{color:var(--green8)}
 .dose-btn.bad{border-color:#E24B4A;background:#FCEBEB}
 .dose-btn.bad .dose-label{color:#A32D2D}
+.dose-btn.scar-btn{border-style:dashed;border-color:#888780;background:#F1EFE8}
+.dose-btn.scar-btn:hover{border-color:var(--teal4);background:var(--teal0)}
+.dose-btn.scar-btn.ok{border-style:solid;border-color:var(--green4);background:var(--green0)}
+.dose-btn.scar-btn.bad{border-style:solid;border-color:#E24B4A;background:#FCEBEB}
 .dose-legend{display:flex;gap:14px;font-size:11px;color:var(--gray6);margin-bottom:12px;flex-wrap:wrap;align-items:center}
 .dose-legend span{display:flex;align-items:center;gap:4px}
 /* MGF block */
@@ -139,8 +143,8 @@ input:focus{outline:none;border-color:var(--teal4);box-shadow:0 0 0 3px rgba(29,
     <div class="brand">
       <div class="brand-icon">🏥</div>
       <div>
-        <div class="brand-title" id="appTitle">Pediatria · Acollida Nouvinguts</div>
-        <div class="brand-sub" id="appSub">Generalitat de Catalunya · PAPPS 2025</div>
+        <div class="brand-title" id="appTitle">Pediatria · Acollida Persones Nouvingudes</div>
+        <div class="brand-sub" id="appSub">PAPPS 2025</div>
       </div>
     </div>
     <div class="lang-sw">
@@ -494,8 +498,9 @@ const MGF_MED  = ['CD','KE','TZ','UG','RW','CM','GA','MZ','MW','ZM','YE','TN','M
 const VACCINES = [
   // Calendari ASPCAT 2025
   {id:'bcg', ca:'BCG (Tuberculosi)', es:'BCG (Tuberculosis)', en:'BCG (Tuberculosis)',
-   doses:[{id:'bcg_0m',ca:'Néixer',es:'Nacimiento',en:'Birth'}],
-   note:{ca:'No al calendari català sistemàtic',es:'No en el calendario catalán sistemático',en:'Not in Catalan systematic schedule'}},
+   doses:[{id:'bcg_0m',ca:'Néixer',es:'Nacimiento',en:'Birth'},{id:'bcg_scar',ca:'Cicatriu ✓',es:'Cicatriz ✓',en:'Scar ✓'}],
+   scarDose:'bcg_scar',
+   note:{ca:'⚠️ Si consta vacunada però sense cicatriu: dubtar de la vacunació',es:'⚠️ Si consta vacunada pero sin cicatriz: dudar de la vacunación',en:'⚠️ If recorded as vaccinated but no scar: question vaccination'}},
   {id:'hexavalent', ca:'Hexavalent (DTPa+HBV+Hib+IPV)', es:'Hexavalente (DTPa+HBV+Hib+IPV)', en:'Hexavalent (DTPa+HBV+Hib+IPV)',
    doses:[{id:'hex_2m',ca:'2m',es:'2m',en:'2m'},{id:'hex_4m',ca:'4m',es:'4m',en:'4m'},{id:'hex_11m',ca:'11m',es:'11m',en:'11m'}]},
   {id:'pentavalent', ca:'Pentavalent (DTPa+Hib+IPV, sense HBV)', es:'Pentavalente (DTPa+Hib+IPV, sin HBV)', en:'Pentavalent (DTPa+Hib+IPV, no HBV)',
@@ -703,7 +708,9 @@ function buildVaxGrid(){
       const st=doseState[d.id]||'none';
       const icon=st==='ok'?'✅':st==='bad'?'⚠️':'⬜';
       const cls=st==='ok'?'ok':st==='bad'?'bad':'';
-      return `<div class="dose-btn ${cls}" id="db_${d.id}" onclick="cycleDose('${d.id}')">
+      const isScar=v.scarDose&&d.id===v.scarDose;
+      const scarCls=isScar?'scar-btn':'';
+      return `<div class="dose-btn ${cls} ${scarCls}" id="db_${d.id}" onclick="cycleDose('${d.id}')">
         <div class="dose-status">${icon}</div>
         <div class="dose-label">${d[lang]||d.ca}</div>
       </div>`;
@@ -881,12 +888,14 @@ function buildSysPrompt(){
 CALENDARI ASPCAT 2025: 0m VRS; 2m Hexavalent+Rotavirus+PCV+MenB; 4m Hexavalent+Rotavirus+PCV+MenC+MenB; 11m Hexavalent+PCV; 12m MenACWY+MenB+Triple vírica; 15m Varicel·la+HepA; 3a Triple vírica+Varicel·la; 6a DTPa-PI+HepA; 11-12a dTpa+MenACWY+VPH+Varicel·la(si no imm)+HepA(si no imm); 40a Td; 60a+ Grip anual; 65a Td+PCV+Grip+Herpes zòster(x2).
 
 ANALÍTIQUES PER ZONA:
-• SEMPRE: Hemograma+eosinòfils, bioquímica bàsica, ferritina. Serologies: HBsAg+Anti-HBs+Anti-HBc, Anti-HAV IgG, Anti-HCV, VIH (consentiment), RPR+TPHA (sífilis).
-• ÀFRICA SUBSAHARIANA: +Mantoux/Quantiferó, femtes x3, sediment orina (Schistosoma haematobium), Strongyloides IgG, electroforesi Hb, G6PD. Noies: Rubèola IgG.
-• MAGRIB: +Mantoux/Quantiferó, femtes x3, Strongyloides IgG, G6PD, Echinococcus IgG. Noies: Rubèola IgG.
-• ASIA MERIDIONAL: +Mantoux/Quantiferó (alta TB), femtes x3, Strongyloides IgG, G6PD.
-• EXTREM ORIENT: +Mantoux/Quantiferó, femtes x3, Strongyloides IgG, G6PD.
-• AMÈRICA LLATINA: +Trypanosoma cruzi IgG (Chagas — vegeu protocol detallat), Strongyloides IgG, Mantoux (alta TB: Haití, Perú, Bolívia), femtes x3.
+• SEMPRE: Hemograma+eosinòfils, bioquímica bàsica, ferritina. Serologies: HBsAg+Anti-HBs+Anti-HBc, Anti-HAV IgG.
+• ÀFRICA SUBSAHARIANA: +Anti-HCV (VHC), VIH (consentiment informat), RPR+TPHA (Sífilis), Mantoux/Quantiferó, femtes x3, sediment orina (Schistosoma haematobium), Strongyloides IgG, electroforesi Hb, G6PD. Noies: Rubèola IgG.
+• MAGRIB (Marroc, Algèria, Tunísia, Líbia, Mauritània, Egipte): +Anti-HCV (VHC), VIH (consentiment informat), Mantoux/Quantiferó, femtes x3, Strongyloides IgG, G6PD, Echinococcus IgG. Noies: Rubèola IgG.
+• ASIA MERIDIONAL (Índia, Pakistan, Bangladesh, Nepal, Sri Lanka, Afganistan): +Mantoux/Quantiferó (alta TB), femtes x3, Strongyloides IgG, G6PD.
+• EXTREM ORIENT i XINA (Xina, Vietnam, Tailàndia, Filipines, Indonèsia, Myanmar, Cambodja, Laos): +Anti-HCV (VHC), VIH (consentiment informat), Mantoux/Quantiferó, femtes x3, Strongyloides IgG, G6PD, sediment orina (Schistosoma japonicum en zones endèmiques).
+• AMÈRICA LLATINA: +Anti-HCV (VHC), VIH (consentiment informat), RPR+TPHA (Sífilis), Trypanosoma cruzi IgG (Chagas — vegeu protocol detallat), Strongyloides IgG, Mantoux (alta TB: Haití, Perú, Bolívia), femtes x3.
+• EUROPA DE L'EST: +Mantoux/Quantiferó, femtes x3. Noies: Rubèola IgG.
+• ORIENT MITJÀ: +Mantoux/Quantiferó, femtes x3, Strongyloides IgG, G6PD.
 
 PROTOCOL DETALLAT MALALTIA DE CHAGAS (Trypanosoma cruzi) — APLICAR SEMPRE EN PACIENTS D'AMÈRICA LLATINA CONTINENTAL (excepte illes del Carib):
 Indicació cribratge:
