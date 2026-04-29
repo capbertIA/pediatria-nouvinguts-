@@ -777,10 +777,40 @@ function selMgf(val){
 }
 
 // ── NAVEGACIÓ ─────────────────────────────────────────────────────
+function isValidDate(dateStr){
+  if(!dateStr) return false;
+  const d = new Date(dateStr);
+  // Check if date is valid (catches Feb 29 on non-leap years etc.)
+  if(isNaN(d.getTime())) return false;
+  // Double-check: re-parse and compare (browser may silently correct invalid dates)
+  const [y,m,day] = dateStr.split('-').map(Number);
+  return d.getFullYear()===y && d.getMonth()+1===m && d.getDate()===day;
+}
+
 function goStep2(){
   const dob=document.getElementById('dob').value;
   const arr=document.getElementById('arrival').value;
-  if(!dob||!arr||!gender||!country){alert(t('errFields'));return;}
+
+  // Validate dates specifically
+  if(!isValidDate(dob)){
+    alert(lang==='ca'?'La data de naixement no és vàlida. Comprova que el dia existeix (p.ex. el 29/02 només existeix en anys bixests).'
+      :lang==='es'?'La fecha de nacimiento no es válida. Comprueba que el día existe (p.ej. el 29/02 solo existe en años bisiestos).'
+      :'The date of birth is not valid. Check that the day exists (e.g. 29/02 only exists in leap years).');
+    return;
+  }
+  if(!isValidDate(arr)){
+    alert(lang==='ca'?'La data d\'arribada no és vàlida. Comprova que el dia existeix (p.ex. el 29/02 només existeix en anys bixests).'
+      :lang==='es'?'La fecha de llegada no es válida. Comprueba que el día existe (p.ej. el 29/02 solo existe en años bisiestos).'
+      :'The arrival date is not valid. Check that the day exists (e.g. 29/02 only exists in leap years).');
+    return;
+  }
+  if(new Date(dob) > new Date(arr)){
+    alert(lang==='ca'?'La data de naixement no pot ser posterior a la data d\'arribada.'
+      :lang==='es'?'La fecha de nacimiento no puede ser posterior a la fecha de llegada.'
+      :'The date of birth cannot be later than the arrival date.');
+    return;
+  }
+  if(!gender||!country){alert(t('errFields'));return;}
   vaxStatus=''; vaccines=new Set(); mgfStatus=''; doseState={};
   ['unknown','record','verbal'].forEach(v=>{
     document.getElementById('vo_'+v).classList.remove('sel');
