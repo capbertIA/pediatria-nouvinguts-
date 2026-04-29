@@ -322,6 +322,10 @@ input:focus{outline:none;border-color:var(--teal4);box-shadow:0 0 0 3px rgba(29,
     <div class="result-hdr"><span style="font-size:22px">🔬</span><span style="font-weight:500;font-size:16px" id="secAnal">Analítiques i proves complementàries</span><span id="statusAnal" style="font-size:13px;color:#1D9E75;font-style:italic;margin-left:auto"></span></div>
     <div class="result-body" id="bodyAnal"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
   </div>
+  <div class="result-sec">
+    <div class="result-hdr"><span style="font-size:22px">🫁</span><span style="font-weight:500;font-size:16px" id="secTB">Cribratge de Tuberculosi</span><span id="statusTB" style="font-size:13px;color:#1D9E75;font-style:italic;margin-left:auto"></span></div>
+    <div class="result-body" id="bodyTB"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+  </div>
   <div class="result-sec" id="mgfResultSec" style="display:none">
     <div class="result-hdr">
       <span style="font-size:22px">⚠️</span>
@@ -916,11 +920,16 @@ async function generateReport(){
   const arr=document.getElementById('arrival').value;
   const age=ageStr();
   const gLbl=gender==='F'?t('lblF'):t('lblM');
-  const vaxDesc=vaxStatus==='unknown'
-    ?'SENSE documentació vacunal — protocol complet des de zero'
-    :vaxStatus==='verbal'
-      ?`Verbalització familiar (fiabilitat baixa). Dosis referides: ${getDosesSummary()}`
-      :`Cartilla vacunal (documentació escrita). Dosis documentades: ${getDosesSummary()}`;
+  const vaxListSummary = getDosesSummary();
+  const hasNoDosesMarked = vaxListSummary === 'Cap dosi marcada';
+
+  const vaxDesc = vaxStatus==='unknown'
+    ? 'SENSE documentació vacunal — aplicar protocol complet des de zero'
+    : vaxStatus==='verbal'
+      ? hasNoDosesMarked
+        ? `Verbalització familiar: la família refereix que el nen/a ha estat vacunat/ada però NO especifica quines vacunes ni dosis. INSTRUCCIÓ: consulta el calendari vacunal de l'OMS per a ${cname(country)} i assumeix que probablement ha rebut les vacunes del programa nacional d'aquell país. Per a cada vacuna del programa, assumeix que porta NOMÉS la primera dosi (la que s'administra a l'edat més petita). Construeix el calendari de rescat a partir d'aquí.`
+        : `Verbalització familiar (fiabilitat baixa, sense document físic). Dosis referides per la família: ${vaxListSummary}. Per a vacunes verbalitzades sense especificar dosi concreta, assumeix que porta la primera dosi del calendari del país d'origen.`
+      : `Cartilla vacunal (documentació escrita). Dosis documentades: ${vaxListSummary}`;
   const mgfLabelMap={yes:lang==='ca'?'Sí confirmada':lang==='es'?'Sí confirmada':'Yes confirmed',no:'No',suspected:lang==='ca'?'Sospita/No explorada':lang==='es'?'Sospecha/No explorada':'Suspected/Not examined',unknown:lang==='ca'?'Desconegut':lang==='es'?'Desconocido':'Unknown'};
   const mgfLbl=mgfLabelMap[mgfStatus]||'No informat';
 
@@ -996,19 +1005,35 @@ Genera el pla PAPPS en FORMAT ESTRICTE. Respon ÚNICAMENT amb HTML simple. NO me
 [MÀXIM 4 punts: salut mental, adaptació, escolarització, vulnerabilitat. Cada punt màxim 12 paraules.]
 </ul>`},
 
-    {id:'bodyAnal', statusId:'statusAnal', loadTxt:loadTxts[2], pct:75,
+    {id:'bodyAnal', statusId:'statusAnal', loadTxt:loadTxts[2], pct:65,
      msg:`${base}
 
-Genera el pla analític en FORMAT ESTRICTE. Respon ÚNICAMENT amb HTML simple.
+Genera el pla analític en FORMAT ESTRICTE. Respon ÚNICAMENT amb HTML simple. NO incloguis res sobre tuberculosi (és en una secció separada).
 
 <h3>Analítiques</h3>
 <table style="width:100%;border-collapse:collapse;font-size:13px">
 <tr style="background:#f0f0f0"><th style="padding:6px;text-align:left;border:1px solid #ddd">Prova</th><th style="padding:6px;text-align:center;border:1px solid #ddd">Prioritat</th><th style="padding:6px;text-align:left;border:1px solid #ddd">Motiu</th></tr>
-[UNA FILA PER PROVA. Prioritat: 🔴 URGENT | 🟡 RECOMANAT | 🟢 OPCIONAL. Motiu: màxim 6 paraules. Agrupa per blocs amb una fila de capçalera grisa: BÀSIQUES · SEROLOGIES · PARASITOLOGIA · TUBERCULOSI]
-</table>
+[UNA FILA PER PROVA. Prioritat: 🔴 URGENT | 🟡 RECOMANAT | 🟢 OPCIONAL. Motiu: màxim 6 paraules. Agrupa per blocs amb una fila de capçalera: <tr style="background:#e8e8e8"><td colspan="3" style="padding:5px 6px;font-weight:600;border:1px solid #ddd">BLOC</td></tr>. Blocs: BÀSIQUES · SEROLOGIES · PARASITOLOGIA]
+</table>`},
 
-IMPORTANT pel bloc TUBERCULOSI: ${tbMsg}
-Si no es pot fer encara: escriu la data exacta i "Programar visita per al [data]". Una sola línia, res més.`},
+    {id:'bodyTB', statusId:'statusTB', loadTxt:'Valorant cribratge TB...', pct:85,
+     msg:`${base}
+
+Genera la secció de TUBERCULOSI en FORMAT ESTRICTE. Respon ÚNICAMENT amb HTML simple.
+
+${tbOk
+  ? `Han passat ${weeksSince} setmanes des de l'arribada. ES POT fer el cribratge.`
+  : `Han passat ${weeksSince} setmanes des de l'arribada. ENCARA NO es pot fer el cribratge. Mínim 12 setmanes. Data per fer-ho: ${tbDate.toLocaleDateString('ca-ES')}.`
+}
+
+<h3>Cribratge de Tuberculosi</h3>
+<table style="width:100%;border-collapse:collapse;font-size:13px">
+<tr style="background:#f0f0f0"><th style="padding:6px;text-align:left;border:1px solid #ddd">Aspecte</th><th style="padding:6px;text-align:left;border:1px solid #ddd">Indicació</th></tr>
+<tr><td style="padding:6px;border:1px solid #ddd"><strong>Prova</strong></td><td style="padding:6px;border:1px solid #ddd">[Mantoux/PPD o Quantiferó IGRA — indica quina és preferible per aquest pacient i per què, en màxim 10 paraules. Si hi ha BCG prèvia, indica possible fals positiu Mantoux]</td></tr>
+<tr><td style="padding:6px;border:1px solid #ddd"><strong>Quan fer-la</strong></td><td style="padding:6px;border:1px solid #ddd">${tbOk ? `✅ Ja es pot fer (${weeksSince} setmanes d'estada)` : `⏳ Posposat fins al <strong>${tbDate.toLocaleDateString('ca-ES')}</strong> (${weeksSince} setmanes — mínim 12)`}</td></tr>
+<tr><td style="padding:6px;border:1px solid #ddd"><strong>Indicació</strong></td><td style="padding:6px;border:1px solid #ddd">[Sí/No indicat per zona ${country.region} — una frase curta]</td></tr>
+<tr><td style="padding:6px;border:1px solid #ddd"><strong>Interpretació</strong></td><td style="padding:6px;border:1px solid #ddd">[Criteris de positivitat en 1-2 frases curtes, considerant BCG si s'ha documentat]</td></tr>
+</table>`},
   ];
 
   if(gender==='F' && hasMGFRisk(country.code)) sections.push(
