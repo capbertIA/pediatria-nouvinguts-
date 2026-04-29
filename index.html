@@ -1036,7 +1036,6 @@ Respon ÚNICAMENT amb un objecte JSON (sense cap altre text, sense cap explicaci
 }`;
 
   try {
-    const apiKey2 = process?.env?.ANTHROPIC_API_KEY || '';
     const vaxRes = await fetch('/.netlify/functions/claude', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
