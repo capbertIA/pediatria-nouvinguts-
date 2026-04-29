@@ -944,26 +944,97 @@ async function generateReport(){
   const loadTxts=t('loadingTxt');
 
   // Crides SEQÜENCIALS
+  const tbDate = new Date(new Date(arr).getTime()+12*7*24*60*60*1000);
+  const weeksSince = Math.floor((new Date()-new Date(arr))/(1000*60*60*24*7));
+  const tbOk = weeksSince >= 12;
+  const tbMsg = tbOk
+    ? `TB: ✅ Ja han passat ${weeksSince} setmanes. ES POT fer Mantoux/Quantiferó/IGRA.`
+    : `TB: ⏳ Han passat ${weeksSince} setmanes (mínim 12). NO fer cribratge fins al ${tbDate.toLocaleDateString('ca-ES')}. Programar visita per aquesta data.`;
+
   const sections=[
     {id:'bodyVax', statusId:'statusVax', loadTxt:loadTxts[0], pct:25,
-     msg:`${base}\n\nAnalitza el calendari vacunal. Indica: 1) Vacunes que probablement té del calendari del seu país; 2) Vacunes que li falten per completar el calendari ASPCAT 2025 per l'edat; 3) Pauta de rescat si escau; 4) Ordre prioritat i intervals mínims; 5) Com interpretar la documentació (tipus: ${vaxStatus}).`},
+     msg:`${base}
+
+Genera l'informe vacunal en FORMAT ESTRICTE. Respon ÚNICAMENT amb HTML simple, sense text introductori ni explicacions. Usa aquest format exacte:
+
+<h3>Vacunes documentades</h3>
+<table style="width:100%;border-collapse:collapse;font-size:13px">
+<tr style="background:#f0f0f0"><th style="padding:6px;text-align:left;border:1px solid #ddd">Vacuna</th><th style="padding:6px;text-align:center;border:1px solid #ddd">Estat</th><th style="padding:6px;text-align:left;border:1px solid #ddd">Observació</th></tr>
+[UNA FILA PER VACUNA DOCUMENTADA o probable del país d'origen. Usa: ✅ Completa | ⚠️ Incompleta | ❌ No vacunat/ada | Estat documental: ${vaxStatus}]
+</table>
+
+<h3>Vacunes pendents (ASPCAT 2025)</h3>
+<table style="width:100%;border-collapse:collapse;font-size:13px">
+<tr style="background:#f0f0f0"><th style="padding:6px;text-align:left;border:1px solid #ddd">Vacuna</th><th style="padding:6px;text-align:center;border:1px solid #ddd">Dosis</th><th style="padding:6px;text-align:left;border:1px solid #ddd">Prioritat</th></tr>
+[UNA FILA PER VACUNA PENDENT. Prioritat: 🔴 Urgent | 🟡 Recomanat | 🟢 Programar]
+</table>
+
+<h3>Pauta de rescat</h3>
+<p><strong>Visita 1 (avui):</strong> [llista curta de vacunes]</p>
+<p><strong>Visita 2 (+1 mes):</strong> [llista curta]</p>
+<p><strong>Visita 3 (+2 mesos):</strong> [llista curta]</p>
+[Afegir visites si cal. MÀXIM 4 visites. Intervals mínims entre dosis entre parèntesi si és rellevant.]`},
+
     {id:'bodyPapps', statusId:'statusPapps', loadTxt:loadTxts[1], pct:50,
-     msg:`${base}\n\nGenera el pla de seguiment PAPPS/Créixer amb Salut per a aquest pacient. NO menciones vacunes ni calendari vacunal. NO menciones analítiques ni proves de laboratori (aquests temes ja es tracten en apartats específics). Centra't exclusivament en: 1) A quina visita PAPPS s'integra per edat actual i quin és el contingut d'aquesta primera visita d'acollida; 2) Calendari de visites de revisió pendents fins als 14 anys amb dates aproximades a partir de ${arr}; 3) Contingut de cada visita: antropometria i corbes de creixement, desenvolupament psicomotor, visió, audició, tensió arterial, exploració física per edat; 4) Educació per la salut específica per l'edat segons la taula de consells PAPPS (alimentació, activitat física, pantalles, higiene, seguretat, prevenció de riscos); 5) Aspectes específics a monitorar en població nouvinguda (adaptació, escolarització, salut mental, detecció de situacions de vulnerabilitat).`},
+     msg:`${base}
+
+Genera el pla PAPPS en FORMAT ESTRICTE. Respon ÚNICAMENT amb HTML simple. NO menciones vacunes ni analítiques.
+
+<h3>Primera visita d'acollida</h3>
+<ul style="font-size:13px;line-height:1.8">
+[MÀXIM 6 punts curts: els aspectes clau d'explorar en la primera visita. Cada punt màxim 10 paraules.]
+</ul>
+
+<h3>Calendari de revisions</h3>
+<table style="width:100%;border-collapse:collapse;font-size:13px">
+<tr style="background:#f0f0f0"><th style="padding:6px;text-align:left;border:1px solid #ddd">Visita</th><th style="padding:6px;text-align:left;border:1px solid #ddd">Data aprox.</th><th style="padding:6px;text-align:left;border:1px solid #ddd">Contingut principal</th></tr>
+[UNA FILA PER VISITA PAPPS pendent fins als 14a. Contingut: màxim 4 ítems separats per comes. Inclou educació per salut per edat.]
+</table>
+
+<h3>Aspectes específics nouvingut/da</h3>
+<ul style="font-size:13px;line-height:1.8">
+[MÀXIM 4 punts: salut mental, adaptació, escolarització, vulnerabilitat. Cada punt màxim 12 paraules.]
+</ul>`},
+
     {id:'bodyAnal', statusId:'statusAnal', loadTxt:loadTxts[2], pct:75,
-     msg:(()=>{
-       const arrDate=new Date(arr);
-       const now=new Date();
-       const weeksSinceArrival=Math.floor((now-arrDate)/(1000*60*60*24*7));
-       const tbWindow=weeksSinceArrival>=12
-         ?`✅ Han passat ${weeksSinceArrival} setmanes des de l'arribada (>${12} setmanes): ES POT fer el cribratge de TB (Mantoux/Quantiferó/IGRA) amb garanties. El resultat serà vàlid.`
-         :`⚠️ Només han passat ${weeksSinceArrival} setmanes des de l'arribada (mínim necessari: 12 setmanes): ENCARA NO es pot fer el cribratge de TB amb garanties. Cal esperar fins al ${new Date(arrDate.getTime()+12*7*24*60*60*1000).toLocaleDateString('ca-ES')} per fer Mantoux/Quantiferó/IGRA amb valor diagnòstic fiable. Programa la prova per a aquesta data.`;
-       return `${base}\n\nElabora el pla analític per nouvingut de la zona: ${country.region} (${cname(country)}). Indica: 1) Analítiques bàsiques immediates; 2) Proves específiques per ${country.region} justificades; 3) Serologies i prevalences; 4) Estudi parasitari específic; 5) Controls de seguiment. Classifica cada prova: URGENT / RECOMANAT / OPCIONAL.\n\nPEL CRIBRATGE DE TUBERCULOSI (Mantoux/Quantiferó/IGRA): ${tbWindow}. Recorda que cal un mínim de 12 setmanes (3 mesos) des del darrer possible contacte (arribada al país) perquè la prova tingui valor diagnòstic. Explica-ho clarament a l'apartat de TB.`;
-     })()},
+     msg:`${base}
+
+Genera el pla analític en FORMAT ESTRICTE. Respon ÚNICAMENT amb HTML simple.
+
+<h3>Analítiques</h3>
+<table style="width:100%;border-collapse:collapse;font-size:13px">
+<tr style="background:#f0f0f0"><th style="padding:6px;text-align:left;border:1px solid #ddd">Prova</th><th style="padding:6px;text-align:center;border:1px solid #ddd">Prioritat</th><th style="padding:6px;text-align:left;border:1px solid #ddd">Motiu</th></tr>
+[UNA FILA PER PROVA. Prioritat: 🔴 URGENT | 🟡 RECOMANAT | 🟢 OPCIONAL. Motiu: màxim 6 paraules. Agrupa per blocs amb una fila de capçalera grisa: BÀSIQUES · SEROLOGIES · PARASITOLOGIA · TUBERCULOSI]
+</table>
+
+IMPORTANT pel bloc TUBERCULOSI: ${tbMsg}
+Si no es pot fer encara: escriu la data exacta i "Programar visita per al [data]". Una sola línia, res més.`},
   ];
 
   if(gender==='F' && hasMGFRisk(country.code)) sections.push(
     {id:'bodyMgf', statusId:'', loadTxt:loadTxts[3], pct:100,
-     msg:`${base}\nEstat MGF: ${mgfLbl}.\n\nAvalua risc MGF per a aquesta nena/adolescent de ${cname(country)}. Indica: 1) Risc (alt/moderat/baix) i prevalença; 2) Actuació clínica per estat: ${mgfLbl}; 3) Si confirmada o sospita: exploració, seqüeles, derivacions urgents; 4) Preguntes clau a la família; 5) Circuit Catalunya (ASSIR, Hospital Clínic, serveis socials, fiscalia); 6) Marc legal; 7) Indicadors d'alerta.`}
+     msg:`${base}\nEstat MGF reportat: ${mgfLbl}.
+
+Genera la valoració MGF en FORMAT ESTRICTE. Respon ÚNICAMENT amb HTML simple.
+
+<h3>Risc MGF — ${cname(country)}</h3>
+<p>[Una sola frase: nivell de risc (ALT/MODERAT) i prevalença estimada.]</p>
+
+<h3>Actuació clínica</h3>
+<ul style="font-size:13px;line-height:1.8">
+[MÀXIM 5 punts d'acció concrets segons l'estat reportat: "${mgfLbl}". Si confirmada o sospita: incloure exploració i derivació urgent. Cada punt màxim 12 paraules.]
+</ul>
+
+<h3>Preguntes clau a la família</h3>
+<ul style="font-size:13px;line-height:1.8">
+[MÀXIM 4 preguntes directes. Format: "Pregunta..." sense explicació.]
+</ul>
+
+<h3>Circuit de derivació (Catalunya)</h3>
+<p>[Una sola línia amb els recursos: ASSIR / Unitat MGF Hospital Clínic / Serveis socials / Fiscalia de menors. Només si hi ha risc actiu o MGF confirmada/sospita.]</p>
+
+<h3>Marc legal</h3>
+<p>[Una sola frase: Art. 149 CP + pena + Llei 5/2008 Catalunya.]</p>`}
   );
 
   for(const sec of sections){
@@ -1047,7 +1118,7 @@ Risc MODERAT: Kenya, Tanzània, Uganda, Rwanda, Camerun, Gabon, Moçambic, Malaw
 Circuits: ASSIR, Unitat MGF Hospital Clínic Barcelona, serveis socials, fiscalia de menors.
 Marc legal: Art. 149 CP espanyol (fins 12 anys presó), Llei 5/2008 Catalunya.
 
-Respon en ${lang==='ca'?'català':lang==='es'?'castellà':'anglès'}. Format HTML simple: <h3>, <ul>, <li>, <strong>. NO taules HTML. Concís i clínicament pràctic. Màx 350 paraules per secció.`;
+Respon en català. FORMAT OBLIGATORI: HTML simple amb taules i llistes curtes. PROHIBIT: text narratiu llarg, introduccions, explicacions redundants, frases de més de 15 paraules. OBLIGATORI: seguir exactament l'estructura HTML que t'indica cada prompt. Les taules han de tenir estil inline. Màxim 350 paraules per secció.`;
 }
 
 // ── RESET ─────────────────────────────────────────────────────────
