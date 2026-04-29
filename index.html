@@ -984,45 +984,37 @@ async function generateReport(){
 
   const sections=[
     {id:'bodyVax', statusId:'statusVax', loadTxt:loadTxts[0], pct:25,
-     msg:`${base}
+     msg:`Pacient: ${cname(country)}, ${age}, nascut/da ${dob}, arribada ${arr}, sexe ${gender==='F'?'femení':'masculí'}.
+Documentació vacunal: ${vaxDesc}.
+${getDosesSummary()!=='Cap dosi marcada'?'Dosis marcades: '+getDosesSummary():''}
 
-Ets una pediatra experta en vacunació. Treballa en 3 passos i genera HTML estricte.
+Genera un informe vacunal HTML amb EXACTAMENT aquestes 3 seccions en ordre:
 
-PAS 1 — QUÈ PORTA:
-Documentació: ${vaxDesc}
-${getDosesSummary() !== 'Cap dosi marcada' ? 'Dosis concretes: ' + getDosesSummary() : 'Cap dosi especificada — ' + (vaxStatus==='verbal' ? 'assumir primera dosi de cada vacuna del PAI de '+cname(country) : 'iniciar totes des de zero')}
-Consulta el calendari PAI de ${cname(country)} per a una persona nascuda el ${dob}.
+SECCIÓ 1 - Títol: "Immunització prèvia assumida"
+Taula HTML amb columnes: Vacuna | Dosis completades | Estat
+Per cada vacuna del calendari ASPCAT 2025, indica quantes dosis porta assumint:
+- El calendari PAI de ${cname(country)} per a persona nascuda el ${dob}
+- La documentació aportada: ${vaxDesc}
+- Si verbal sense dosis especificades: assumir primera dosi de cada vacuna del PAI de ${cname(country)}
+Estat: ✅ Completa | ⚠️ Incompleta (X de Y dosis) | ❌ Cap dosi | — No aplica per edat
+IMPORTANT: inclou SEMPRE VPH si ${gender==='F'?'femení entre 9-26 anys':'masculí entre 9-18 anys'}.
 
-PAS 2 — QUÈ LI FALTA:
-Compara amb ASPCAT 2025 per edat ${age}. Regles:
-- VPH: OBLIGATORI si femení 9-26a o masculí 9-18a (no al PAI de ${cname(country)}) → sempre pendent
-- MenB, MenACWY, Varicel·la, HepA, Rotavirus: habitualment absents al PAI de ${cname(country)} → incloure si manquen per edat
-- Vacunes del país NO al ASPCAT (febre groga, etc.): anota-les però NO les posis a pendents
-- Catch-up: mínim 4 setmanes entre dosis de la mateixa sèrie; màxim 4-5 vacunes per visita
+SECCIÓ 2 - Títol: "Vacunes pendents per completar calendari ASPCAT 2025"
+Taula HTML amb columnes: Vacuna | Dosis pendents | Prioritat | Interval mínim
+Llista NOMÉS les vacunes que falten. Prioritat: 🔴 Urgent o 🟡 Recomanat.
+Vacunes del PAI de ${cname(country)} que NO són al calendari ASPCAT (ex: febre groga): NO les incloguis aquí.
+Vacunes ASPCAT absents al PAI de ${cname(country)} (VPH, MenB, MenACWY, Varicel·la, HepA): inclou-les si corresponen per edat.
 
-PAS 3 — GENERA:
+SECCIÓ 3 - Títol: "Calendari d'immunització accelerada"
+Taula HTML amb columnes: Visita | Data aproximada | Vacunes a administrar | Notes
+Visita 1 = ${arr}. Calcula les dates reals de les visites següents.
+Distribueix totes les vacunes pendents en màxim 5 visites respectant:
+- Màxim 4-5 vacunes per visita
+- Mínim 4 setmanes entre dosis de la mateixa sèrie
+- VPH: 3 dosis en 0-2-6 mesos (o 2 dosis en 0-6 mesos si <15 anys en 1a dosi)
+Capçalera de la taula en color verd fosc (#0F6E56) amb text blanc.
 
-<h3>Immunització prèvia assumida</h3>
-<table style="width:100%;border-collapse:collapse;font-size:13px">
-<tr style="background:#f0f0f0">
-  <th style="padding:6px;border:1px solid #ddd">Vacuna ASPCAT</th>
-  <th style="padding:6px;text-align:center;border:1px solid #ddd">Dosis completades</th>
-  <th style="padding:6px;text-align:center;border:1px solid #ddd">Estat</th>
-</tr>
-[Una fila per cada vacuna del calendari ASPCAT rellevant per l'edat ${age}. Estat: ✅ Completa | ⚠️ Incompleta (X/Y dosis) | ❌ Pendent (0 dosis) | — No aplica per edat. Inclou VPH.]
-</table>
-
-<h3>Calendari d'immunització accelerada — ASPCAT 2025</h3>
-<p style="font-size:12px;color:#666;margin-bottom:8px">Data inici: ${arr} · Edat: ${age}</p>
-<table style="width:100%;border-collapse:collapse;font-size:13px">
-<tr style="background:#0F6E56;color:white">
-  <th style="padding:8px;border:1px solid #ddd;width:15%">Visita</th>
-  <th style="padding:8px;border:1px solid #ddd;width:20%">Data aprox.</th>
-  <th style="padding:8px;border:1px solid #ddd">Vacunes a administrar</th>
-  <th style="padding:8px;border:1px solid #ddd;width:25%">Notes</th>
-</tr>
-[Una fila per visita. Visita 1 = avui (${arr}). Calcula les dates sumant les setmanes necessàries. Distribueix les vacunes respectant intervals. Inclou VPH si correspon. Màxim 5 visites. Omite les visites sense vacunes. Notes: intervals importants o precaucions.]
-</table>`},
+Usa estil CSS inline a les taules: border-collapse:collapse, font-size:13px, padding:6px, border:1px solid #ddd. Capçaleres amb background:#f0f0f0 excepte la taula de la secció 3 que és #0F6E56 amb color blanc.`},
 
     {id:'bodyPapps', statusId:'statusPapps', loadTxt:loadTxts[1], pct:50,
      msg:`${base}
