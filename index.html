@@ -986,34 +986,43 @@ async function generateReport(){
     {id:'bodyVax', statusId:'statusVax', loadTxt:loadTxts[0], pct:25,
      msg:`${base}
 
-Genera l'informe vacunal en FORMAT ESTRICTE. Respon ÚNICAMENT amb HTML simple, sense text introductori.
+Ets una pediatra experta en vacunació. Treballa en 3 passos i genera HTML estricte.
 
-INSTRUCCIONS CRÍTIQUES:
-1. Consulta el calendari OMS/PAI de ${cname(country)} i el calendari ASPCAT 2025.
-2. Vacunes que té el país d'origen PERÒ NO Catalunya (ex: febre groga, febre tifoidea, Japanese encephalitis, etc.): APARÈIXEN a "Vacunes documentades" com a informació però NO a "Vacunes pendents ASPCAT".
-3. Vacunes que té Catalunya PERÒ NO el país d'origen (ex: VPH, MenB, MenACWY, Varicel·la, HepA, Rotavirus, etc.): han d'aparèixer a "Vacunes pendents ASPCAT" amb PRIORITAT ALTA si correspon per edat.
-4. VPH (Papil·loma humà): OBLIGATORI verificar si correspon per edat (11-12a ASPCAT, però pot administrar-se fins als 18a i en noies fins als 26a). Si la pacient té entre 9 i 26 anys i és femenina, o entre 9 i 18 anys si és masculí: INCLOURE SEMPRE a pendents.
-5. MenACWY, MenB, Varicel·la, HepA: verificar sempre si corresponen per edat i si consten com a administrades.
-6. Documentació tipus "${vaxStatus}": ${vaxStatus==='unknown' ? 'ZERO dosis assumides. Iniciar totes les sèries des de zero.' : vaxStatus==='verbal' && (getDosesSummary()==='Cap dosi marcada') ? 'Família verbalitza vacunació però sense especificar vacunes ni dosis. Assumeix el calendari PAI complet de '+cname(country)+' amb PRIMERA DOSI de cada vacuna del programa nacional. Construeix el rescat a partir d\'aquí.' : 'Dosis referides/documentades indicades a continuació. Usa-les per calcular el rescat.'}
+PAS 1 — QUÈ PORTA:
+Documentació: ${vaxDesc}
+${getDosesSummary() !== 'Cap dosi marcada' ? 'Dosis concretes: ' + getDosesSummary() : 'Cap dosi especificada — ' + (vaxStatus==='verbal' ? 'assumir primera dosi de cada vacuna del PAI de '+cname(country) : 'iniciar totes des de zero')}
+Consulta el calendari PAI de ${cname(country)} per a una persona nascuda el ${dob}.
 
-<h3>Vacunes documentades / probables</h3>
+PAS 2 — QUÈ LI FALTA:
+Compara amb ASPCAT 2025 per edat ${age}. Regles:
+- VPH: OBLIGATORI si femení 9-26a o masculí 9-18a (no al PAI de ${cname(country)}) → sempre pendent
+- MenB, MenACWY, Varicel·la, HepA, Rotavirus: habitualment absents al PAI de ${cname(country)} → incloure si manquen per edat
+- Vacunes del país NO al ASPCAT (febre groga, etc.): anota-les però NO les posis a pendents
+- Catch-up: mínim 4 setmanes entre dosis de la mateixa sèrie; màxim 4-5 vacunes per visita
+
+PAS 3 — GENERA:
+
+<h3>Immunització prèvia assumida</h3>
 <table style="width:100%;border-collapse:collapse;font-size:13px">
-<tr style="background:#f0f0f0"><th style="padding:6px;text-align:left;border:1px solid #ddd">Vacuna</th><th style="padding:6px;text-align:center;border:1px solid #ddd">Estat</th><th style="padding:6px;text-align:left;border:1px solid #ddd">Observació breu</th></tr>
-[UNA FILA PER VACUNA. Inclou totes les vacunes del calendari de ${cname(country)} + les documentades. Icones: ✅ Sèrie completa | ⚠️ Incompleta | ❌ No administrada | ➡️ No al calendari ASPCAT. Observació: màxim 8 paraules.]
+<tr style="background:#f0f0f0">
+  <th style="padding:6px;border:1px solid #ddd">Vacuna ASPCAT</th>
+  <th style="padding:6px;text-align:center;border:1px solid #ddd">Dosis completades</th>
+  <th style="padding:6px;text-align:center;border:1px solid #ddd">Estat</th>
+</tr>
+[Una fila per cada vacuna del calendari ASPCAT rellevant per l'edat ${age}. Estat: ✅ Completa | ⚠️ Incompleta (X/Y dosis) | ❌ Pendent (0 dosis) | — No aplica per edat. Inclou VPH.]
 </table>
 
-<h3>Vacunes pendents — Calendari ASPCAT 2025</h3>
+<h3>Calendari d'immunització accelerada — ASPCAT 2025</h3>
+<p style="font-size:12px;color:#666;margin-bottom:8px">Data inici: ${arr} · Edat: ${age}</p>
 <table style="width:100%;border-collapse:collapse;font-size:13px">
-<tr style="background:#f0f0f0"><th style="padding:6px;text-align:left;border:1px solid #ddd">Vacuna</th><th style="padding:6px;text-align:center;border:1px solid #ddd">Dosis pendents</th><th style="padding:6px;text-align:center;border:1px solid #ddd">Prioritat</th><th style="padding:6px;text-align:left;border:1px solid #ddd">Nota</th></tr>
-[UNA FILA per vacuna pendent del calendari ASPCAT no administrada o incompleta. Prioritat: 🔴 Urgent | 🟡 Recomanat. Nota: intervals mínims si rellevant. IMPORTANT: incloure VPH si correspon per edat i sexe.]
-</table>
-
-<h3>Pauta de rescat</h3>
-<p><strong>Visita 1 (avui):</strong> [vacunes a administrar]</p>
-<p><strong>Visita 2 (+1 mes):</strong> [vacunes a administrar]</p>
-<p><strong>Visita 3 (+2 mesos):</strong> [vacunes si cal]</p>
-<p><strong>Visita 4 (+6 mesos):</strong> [vacunes si cal — ex: 3a dosi HepB, HepA]</p>
-[Màxim 4 visites. Ometre les visites buides.]`},
+<tr style="background:#0F6E56;color:white">
+  <th style="padding:8px;border:1px solid #ddd;width:15%">Visita</th>
+  <th style="padding:8px;border:1px solid #ddd;width:20%">Data aprox.</th>
+  <th style="padding:8px;border:1px solid #ddd">Vacunes a administrar</th>
+  <th style="padding:8px;border:1px solid #ddd;width:25%">Notes</th>
+</tr>
+[Una fila per visita. Visita 1 = avui (${arr}). Calcula les dates sumant les setmanes necessàries. Distribueix les vacunes respectant intervals. Inclou VPH si correspon. Màxim 5 visites. Omite les visites sense vacunes. Notes: intervals importants o precaucions.]
+</table>`},
 
     {id:'bodyPapps', statusId:'statusPapps', loadTxt:loadTxts[1], pct:50,
      msg:`${base}
