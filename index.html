@@ -493,8 +493,56 @@ const COUNTRIES = [
   {code:'OM',ca:'Oman',es:'Omán',en:'Oman',region:'Orient Mitjà'},
 ];
 
-const MGF_HIGH = ['GN','SL','SO','DJ','ML','ER','ET','SD','SS','EG','SN','LR','MR','BF','GM','CI','GW','NE','NG','TD','CF'];
-const MGF_MED  = ['CD','KE','TZ','UG','RW','CM','GA','MZ','MW','ZM','YE','TN','MA'];
+// MGF country lists based on WHO data and Catalan Protocol
+// RISC ALT: prevalença >25% (Font: OMS 2001, Protocol Catalunya 2007)
+const MGF_HIGH = [
+  'GN',  // Guinea 99%
+  'SO',  // Somàlia 98-100%
+  'DJ',  // Djibouti 98%
+  'EG',  // Egipte 97%
+  'ER',  // Eritrea 95%
+  'ML',  // Mali 94%
+  'SD',  // Sudan 89%
+  'SS',  // Sudan del Sud 89%
+  'ET',  // Etiòpia 85%
+  'GM',  // Gàmbia 80%
+  'BF',  // Burkina Faso 72%
+  'SL',  // Sierra Leone 90%
+  'LR',  // Libèria 60%
+  'TD',  // Txad 60%
+  'GW',  // Guinea Bissau 50%
+  'CF',  // República Centreafricana 43%
+  'CI',  // Costa d'Ivori 43%
+  'SN',  // Senegal 20-30% (però pràctica molt estesa en algunes ètnies)
+  'MR',  // Mauritània 25%
+  'NE',  // Níger 5% però present
+  'NG',  // Nigèria 40-50%
+  'GH',  // Ghana 30%
+];
+// RISC MODERAT: prevalença 5-25% o pràctica documentada en algunes zones
+const MGF_MED = [
+  'KE',  // Kenya 38%
+  'TZ',  // Tanzània 18%
+  'TG',  // Togo 12%
+  'BJ',  // Benín 50%
+  'CM',  // Camerun 20%
+  'UG',  // Uganda 5%
+  'CD',  // Congo RD 5%
+  'RW',  // Rwanda present en algunes zones
+  'MW',  // Malawi present
+  'MZ',  // Moçambic present
+  'ZM',  // Zàmbia present
+  'GA',  // Gabon present
+  'YE',  // Iemen 23%
+  'OM',  // Oman present en algunes zones
+  'ID',  // Indonèsia present en algunes comunitats
+  'MY',  // Malàisia present
+  'IN',  // Índia present en comunitats Bohra
+];
+// Funció: té risc de MGF?
+function hasMGFRisk(code) {
+  return MGF_HIGH.includes(code) || MGF_MED.includes(code);
+}
 
 const VACCINES = [
   // Calendari ASPCAT 2025
@@ -818,7 +866,21 @@ function goStep2(){
     document.getElementById('vr_'+v).innerHTML='';
   });
   document.getElementById('vaxListSection').style.display='none';
-  document.getElementById('mgfSection').style.display=gender==='F'?'block':'none';
+  // Mostrar pregunta MGF NOMÉS si: sexe femení + país de risc
+  const mgfSec = document.getElementById('mgfSection');
+  if (gender === 'F' && hasMGFRisk(country.code)) {
+    mgfSec.style.display = 'block';
+    mgfStatus = '';
+    ['yes','no','suspected','unknown'].forEach(opt => {
+      const el = document.getElementById('mo_'+opt);
+      if (el) el.classList.remove('sel');
+      const rd = document.getElementById('mr_'+opt);
+      if (rd) { rd.style.cssText=''; rd.innerHTML=''; }
+    });
+  } else {
+    mgfSec.style.display = 'none';
+    mgfStatus = 'na';
+  }
   buildVaxGrid();
   setStep(2);
 }
@@ -842,7 +904,7 @@ async function generateReport(){
   setStep(3);
 
   // Mostra/amaga secció MGF
-  document.getElementById('mgfResultSec').style.display=gender==='F'?'block':'none';
+  document.getElementById('mgfResultSec').style.display=(gender==='F' && hasMGFRisk(country.code))?'block':'none';
 
   // Barra de progrés
   const pb=document.getElementById('progressBar');
@@ -899,7 +961,7 @@ async function generateReport(){
      })()},
   ];
 
-  if(gender==='F') sections.push(
+  if(gender==='F' && hasMGFRisk(country.code)) sections.push(
     {id:'bodyMgf', statusId:'', loadTxt:loadTxts[3], pct:100,
      msg:`${base}\nEstat MGF: ${mgfLbl}.\n\nAvalua risc MGF per a aquesta nena/adolescent de ${cname(country)}. Indica: 1) Risc (alt/moderat/baix) i prevalença; 2) Actuació clínica per estat: ${mgfLbl}; 3) Si confirmada o sospita: exploració, seqüeles, derivacions urgents; 4) Preguntes clau a la família; 5) Circuit Catalunya (ASSIR, Hospital Clínic, serveis socials, fiscalia); 6) Marc legal; 7) Indicadors d'alerta.`}
   );
