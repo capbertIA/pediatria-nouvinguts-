@@ -113,7 +113,7 @@ input:focus{outline:none;border-color:var(--teal4);box-shadow:0 0 0 3px rgba(29,
 .btn-new{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:500}
 /* Result sections */
 .result-sec{background:#fff;border-radius:16px;border:1px solid var(--gray1);margin-bottom:14px;overflow:hidden}
-.result-hdr{padding:16px 22px;display:flex;align-items:center;gap:12px}
+.result-hdr{padding:14px 22px;display:flex;align-items:center;gap:12px}
 .result-body{border-top:1px solid var(--gray0);padding:16px 22px;font-size:14px;line-height:1.75}
 .result-body h3{font-size:14px;font-weight:600;color:var(--teal);margin:14px 0 6px;text-transform:uppercase;letter-spacing:.5px}
 .result-body ul{padding-left:18px;margin:6px 0}
@@ -311,25 +311,47 @@ input:focus{outline:none;border-color:var(--teal4);box-shadow:0 0 0 3px rgba(29,
   </div>
 
   <div class="result-sec">
-    <div class="result-hdr"><span style="font-size:22px">💉</span><span style="font-weight:500;font-size:16px" id="secVax">Calendari de vacunació</span><span id="statusVax" style="font-size:13px;color:#1D9E75;font-style:italic;margin-left:auto"></span></div>
+    <div class="result-hdr">
+      <div style="width:38px;height:38px;background:#E6F1FB;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">💉</div>
+      <span style="font-weight:600;font-size:15px" id="secVax">Calendari de vacunació</span>
+      <span id="statusVax" style="font-size:13px;color:#1D9E75;font-style:italic;margin-left:auto"></span>
+    </div>
     <div class="result-body" id="bodyVax"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
   </div>
   <div class="result-sec">
-    <div class="result-hdr"><span style="font-size:22px">📋</span><span style="font-weight:500;font-size:16px" id="secPapps">Visites PAPPS / Créixer amb Salut</span><span id="statusPapps" style="font-size:13px;color:#1D9E75;font-style:italic;margin-left:auto"></span></div>
+    <div class="result-hdr">
+      <div style="width:38px;height:38px;background:#E1F5EE;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🩺</div>
+      <span style="font-weight:600;font-size:15px" id="secPapps">Visita d'acollida — PAPPS</span>
+      <span id="statusPapps" style="font-size:13px;color:#1D9E75;font-style:italic;margin-left:auto"></span>
+    </div>
     <div class="result-body" id="bodyPapps"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
   </div>
   <div class="result-sec">
-    <div class="result-hdr"><span style="font-size:22px">🔬</span><span style="font-weight:500;font-size:16px" id="secAnal">Analítiques i proves complementàries</span><span id="statusAnal" style="font-size:13px;color:#1D9E75;font-style:italic;margin-left:auto"></span></div>
+    <div class="result-hdr">
+      <div style="width:38px;height:38px;background:#EEEDFE;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🔬</div>
+      <span style="font-weight:600;font-size:15px" id="secAnal">Analítiques i serologies</span>
+      <span id="statusAnal" style="font-size:13px;color:#1D9E75;font-style:italic;margin-left:auto"></span>
+    </div>
     <div class="result-body" id="bodyAnal"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
   </div>
   <div class="result-sec">
-    <div class="result-hdr"><span style="font-size:22px">🫁</span><span style="font-weight:500;font-size:16px" id="secTB">Cribratge de Tuberculosi</span><span id="statusTB" style="font-size:13px;color:#1D9E75;font-style:italic;margin-left:auto"></span></div>
+    <div class="result-hdr">
+      <div style="width:38px;height:38px;background:#FFF3E0;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🫁</div>
+      <span style="font-weight:600;font-size:15px" id="secTB">Cribratge de Tuberculosi</span>
+    </div>
     <div class="result-body" id="bodyTB"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+  </div>
+  <div class="result-sec">
+    <div class="result-hdr">
+      <div style="width:38px;height:38px;background:#F1F8E9;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🦟</div>
+      <span style="font-weight:600;font-size:15px" id="secMalaria">Cribratge de Malària (Plasmodium)</span>
+    </div>
+    <div class="result-body" id="bodyMalaria"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
   </div>
   <div class="result-sec" id="mgfResultSec" style="display:none">
     <div class="result-hdr">
-      <span style="font-size:22px">⚠️</span>
-      <span style="font-weight:500;font-size:16px" id="secMgf">Valoració MGF</span>
+      <div style="width:38px;height:38px;background:#FCEBEB;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">⚠️</div>
+      <span style="font-weight:600;font-size:15px" id="secMgf">Valoració MGF</span>
       <span id="mgfBadge" class="badge" style="margin-left:auto"></span>
     </div>
     <div class="result-body" id="bodyMgf"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
@@ -987,54 +1009,126 @@ Genera l'informe vacunal en FORMAT ESTRICTE. Respon ÚNICAMENT amb HTML simple, 
     {id:'bodyPapps', statusId:'statusPapps', loadTxt:loadTxts[1], pct:50,
      msg:`${base}
 
-Genera el pla PAPPS en FORMAT ESTRICTE. Respon ÚNICAMENT amb HTML simple. NO menciones vacunes ni analítiques.
+Genera el contingut de la VISITA D'ACOLLIDA en FORMAT ESTRICTE. Respon ÚNICAMENT amb HTML simple. NO menciones vacunes, analítiques, tuberculosi ni malària. NO facis calendari de visites futures.
 
-<h3>Primera visita d'acollida</h3>
-<ul style="font-size:13px;line-height:1.8">
-[MÀXIM 6 punts curts: els aspectes clau d'explorar en la primera visita. Cada punt màxim 10 paraules.]
-</ul>
-
-<h3>Calendari de revisions</h3>
+<h3>Visita d'acollida — contingut</h3>
 <table style="width:100%;border-collapse:collapse;font-size:13px">
-<tr style="background:#f0f0f0"><th style="padding:6px;text-align:left;border:1px solid #ddd">Visita</th><th style="padding:6px;text-align:left;border:1px solid #ddd">Data aprox.</th><th style="padding:6px;text-align:left;border:1px solid #ddd">Contingut principal</th></tr>
-[UNA FILA PER VISITA PAPPS pendent fins als 14a. Contingut: màxim 4 ítems separats per comes. Inclou educació per salut per edat.]
-</table>
+<tr style="background:#f0f0f0"><th style="padding:6px;text-align:left;border:1px solid #ddd;width:35%">Àmbit</th><th style="padding:6px;text-align:left;border:1px solid #ddd">Què explorar / valorar</th></tr>
+<tr><td style="padding:6px;border:1px solid #ddd"><strong>Anamnesi</strong></td><td style="padding:6px;border:1px solid #ddd">[Antecedents perinatals, malalties, hospitalitzacions, al·lèrgies, medicació. Màxim 8 ítems separats per punt i coma]</td></tr>
+<tr><td style="padding:6px;border:1px solid #ddd"><strong>Història social</strong></td><td style="padding:6px;border:1px solid #ddd">[Composició familiar, situació administrativa, habitatge, idioma, escolarització. Màxim 5 ítems]</td></tr>
+<tr><td style="padding:6px;border:1px solid #ddd"><strong>Exploració física</strong></td><td style="padding:6px;border:1px solid #ddd">[Pes, talla, IMC, corbes OMS; TA; visió; audició; pell; abdomen. Adaptat a ${age}]</td></tr>
+<tr><td style="padding:6px;border:1px solid #ddd"><strong>Desenvolupament</strong></td><td style="padding:6px;border:1px solid #ddd">[Valoració psicomotora, llenguatge i conducta adequada per ${age}]</td></tr>
+<tr><td style="padding:6px;border:1px solid #ddd"><strong>Educació per la salut</strong></td><td style="padding:6px;border:1px solid #ddd">[3-4 consells específics per ${age} segons PAPPS: alimentació, activitat física, pantalles, higiene]</td></tr>
+<tr><td style="padding:6px;border:1px solid #ddd"><strong>Vulnerabilitat</strong></td><td style="padding:6px;border:1px solid #ddd">[Indicadors a detectar: dol migratori, pobresa, violència, necessitat de treball social]</td></tr>
+</table>`},
 
-<h3>Aspectes específics nouvingut/da</h3>
-<ul style="font-size:13px;line-height:1.8">
-[MÀXIM 4 punts: salut mental, adaptació, escolarització, vulnerabilitat. Cada punt màxim 12 paraules.]
-</ul>`},
-
-    {id:'bodyAnal', statusId:'statusAnal', loadTxt:loadTxts[2], pct:65,
+    {id:'bodyAnal', statusId:'statusAnal', loadTxt:loadTxts[2], pct:70,
      msg:`${base}
 
-Genera el pla analític en FORMAT ESTRICTE. Respon ÚNICAMENT amb HTML simple. NO incloguis res sobre tuberculosi (és en una secció separada).
+Genera el pla analític en FORMAT ESTRICTE. Respon ÚNICAMENT amb HTML simple. NO incloguis res sobre tuberculosi ni malària (van en seccions separades).
 
 <h3>Analítiques</h3>
 <table style="width:100%;border-collapse:collapse;font-size:13px">
 <tr style="background:#f0f0f0"><th style="padding:6px;text-align:left;border:1px solid #ddd">Prova</th><th style="padding:6px;text-align:center;border:1px solid #ddd">Prioritat</th><th style="padding:6px;text-align:left;border:1px solid #ddd">Motiu</th></tr>
-[UNA FILA PER PROVA. Prioritat: 🔴 URGENT | 🟡 RECOMANAT | 🟢 OPCIONAL. Motiu: màxim 6 paraules. Agrupa per blocs amb una fila de capçalera: <tr style="background:#e8e8e8"><td colspan="3" style="padding:5px 6px;font-weight:600;border:1px solid #ddd">BLOC</td></tr>. Blocs: BÀSIQUES · SEROLOGIES · PARASITOLOGIA]
-</table>`},
+<tr style="background:#e8e8e8"><td colspan="3" style="padding:5px 6px;font-weight:600;border:1px solid #ddd">ANALÍTIQUES BÀSIQUES (tots els pacients)</td></tr>
+[Hemograma complet amb fórmula i eosinòfils — RECOMANAT]
+[Bioquímica bàsica + estudi del ferro (glucosa, creatinina, urea, GOT, GPT, GGT, bilirubina, siderèmia, IST, transferrina) — RECOMANAT. NO posar ferritina per separat, ja va inclosa]
+<tr style="background:#e8e8e8"><td colspan="3" style="padding:5px 6px;font-weight:600;border:1px solid #ddd">SEROLOGIES</td></tr>
+[HBsAg + Anti-HBs + Anti-HBc — sempre]
+[Anti-HAV IgG — sempre]
+[Anti-HCV — segons zona: ${country.region}]
+[VIH 1+2 — amb consentiment informat. Indica si és recomanat per zona]
+[RPR + TPHA (sífilis) — segons zona]
+[Serologies específiques addicionals per ${country.region} — indica les pertinents]
+<tr style="background:#e8e8e8"><td colspan="3" style="padding:5px 6px;font-weight:600;border:1px solid #ddd">PARASITOLOGIA</td></tr>
+[Femtes x3 — indica si pertoca per zona]
+[Strongyloides stercoralis IgG — indica si pertoca]
+[Chagas (Trypanosoma cruzi IgG) — indica si pertoca. Si pertoca, afegeix una nota breu del protocol]
+[Altres paràsits específics per zona ${country.region}]
+[G6PD — indica si pertoca per zona]
+[Electroforesi Hb — indica si pertoca per zona]
+</table>
+IMPORTANT: No repitis informació. Una fila per prova. Si la prova NO pertoca per la zona ${country.region}, no la posis.`},
 
-    {id:'bodyTB', statusId:'statusTB', loadTxt:'Valorant cribratge TB...', pct:85,
-     msg:`${base}
-
-Genera la secció de TUBERCULOSI en FORMAT ESTRICTE. Respon ÚNICAMENT amb HTML simple.
-
-${tbOk
-  ? `Han passat ${weeksSince} setmanes des de l'arribada. ES POT fer el cribratge.`
-  : `Han passat ${weeksSince} setmanes des de l'arribada. ENCARA NO es pot fer el cribratge. Mínim 12 setmanes. Data per fer-ho: ${tbDate.toLocaleDateString('ca-ES')}.`
-}
-
-<h3>Cribratge de Tuberculosi</h3>
-<table style="width:100%;border-collapse:collapse;font-size:13px">
-<tr style="background:#f0f0f0"><th style="padding:6px;text-align:left;border:1px solid #ddd">Aspecte</th><th style="padding:6px;text-align:left;border:1px solid #ddd">Indicació</th></tr>
-<tr><td style="padding:6px;border:1px solid #ddd"><strong>Prova</strong></td><td style="padding:6px;border:1px solid #ddd">[Mantoux/PPD o Quantiferó IGRA — indica quina és preferible per aquest pacient i per què, en màxim 10 paraules. Si hi ha BCG prèvia, indica possible fals positiu Mantoux]</td></tr>
-<tr><td style="padding:6px;border:1px solid #ddd"><strong>Quan fer-la</strong></td><td style="padding:6px;border:1px solid #ddd">${tbOk ? `✅ Ja es pot fer (${weeksSince} setmanes d'estada)` : `⏳ Posposat fins al <strong>${tbDate.toLocaleDateString('ca-ES')}</strong> (${weeksSince} setmanes — mínim 12)`}</td></tr>
-<tr><td style="padding:6px;border:1px solid #ddd"><strong>Indicació</strong></td><td style="padding:6px;border:1px solid #ddd">[Sí/No indicat per zona ${country.region} — una frase curta]</td></tr>
-<tr><td style="padding:6px;border:1px solid #ddd"><strong>Interpretació</strong></td><td style="padding:6px;border:1px solid #ddd">[Criteris de positivitat en 1-2 frases curtes, considerant BCG si s'ha documentat]</td></tr>
-</table>`},
   ];
+
+  // ── SECCIÓ TB: generada LOCALMENT sense IA (sempre visible) ──────
+  const bcgDocumentada = doseState['bcg_0m'] === 'ok';
+  const bcgCicatriu = doseState['bcg_scar'] === 'ok';
+  const bcgSospita = bcgDocumentada && !bcgCicatriu;
+  const zonesAltaTB = ['Àfrica Subsahariana','Magrib','Asia Meridional','Extrem Orient','Amèrica Llatina','Europa de lEst','Orient Mitjà'];
+  const altaTB = zonesAltaTB.includes(country.region);
+  const prova = bcgDocumentada
+    ? 'Quantiferó IGRA (preferit — BCG documentada pot donar fals positiu al Mantoux)'
+    : 'Mantoux/PPD o Quantiferó IGRA';
+  const tbHtml = `
+<table style="width:100%;border-collapse:collapse;font-size:13px">
+<tr style="background:#f0f0f0">
+  <th style="padding:6px;text-align:left;border:1px solid #ddd;width:35%">Aspecte</th>
+  <th style="padding:6px;text-align:left;border:1px solid #ddd">Indicació</th>
+</tr>
+<tr>
+  <td style="padding:6px;border:1px solid #ddd"><strong>Indicació per zona</strong></td>
+  <td style="padding:6px;border:1px solid #ddd">${altaTB ? '🔴 <strong>RECOMANAT</strong> — zona d\'alta incidència: '+country.region : '🟢 OPCIONAL — zona de baixa incidència TB'}</td>
+</tr>
+<tr>
+  <td style="padding:6px;border:1px solid #ddd"><strong>Prova recomanada</strong></td>
+  <td style="padding:6px;border:1px solid #ddd">${prova}</td>
+</tr>
+${bcgSospita ? `<tr style="background:#fff8e1">
+  <td style="padding:6px;border:1px solid #ddd"><strong>⚠️ BCG sense cicatriu</strong></td>
+  <td style="padding:6px;border:1px solid #ddd">BCG documentada però sense cicatriu confirmada. Dubte sobre immunització real. Preferir Quantiferó IGRA.</td>
+</tr>` : ''}
+<tr style="${tbOk ? '' : 'background:#fff3e0'}">
+  <td style="padding:6px;border:1px solid #ddd"><strong>Quan fer-la</strong></td>
+  <td style="padding:6px;border:1px solid #ddd">${tbOk
+    ? `✅ <strong>Ja es pot fer</strong> — han passat ${weeksSince} setmanes des de l'arribada (mínim 12)`
+    : `⏳ <strong>POSPOSAT fins al ${tbDate.toLocaleDateString('ca-ES')}</strong> — han passat ${weeksSince} setmanes (mínim 12). Programar visita per aquesta data.`
+  }</td>
+</tr>
+<tr>
+  <td style="padding:6px;border:1px solid #ddd"><strong>Criteris positivitat</strong></td>
+  <td style="padding:6px;border:1px solid #ddd">Mantoux: ≥5mm si immunodeprimit; ≥10mm si BCG o zona endèmica; ≥15mm resta. Quantiferó: seguir valors de referència del laboratori.</td>
+</tr>
+<tr>
+  <td style="padding:6px;border:1px solid #ddd"><strong>Si positiu</strong></td>
+  <td style="padding:6px;border:1px solid #ddd">Rx tòrax + valoració de TB activa. Si latent: considerar profilaxi amb isoniazida o rifampicina segons protocol.</td>
+</tr>
+</table>`;
+  document.getElementById('bodyTB').innerHTML = tbHtml;
+
+  // ── SECCIÓ MALÀRIA: generada LOCALMENT sense IA ──────────────────
+  const malariaZones = ['Àfrica Subsahariana','Asia Meridional','Extrem Orient','Amèrica Llatina','Orient Mitjà','Oceania'];
+  const malariaRisk = malariaZones.includes(country.region);
+  const malariaHtml = malariaRisk ? `
+<table style="width:100%;border-collapse:collapse;font-size:13px">
+<tr style="background:#f0f0f0">
+  <th style="padding:6px;text-align:left;border:1px solid #ddd;width:35%">Aspecte</th>
+  <th style="padding:6px;text-align:left;border:1px solid #ddd">Indicació</th>
+</tr>
+<tr>
+  <td style="padding:6px;border:1px solid #ddd"><strong>Indicació</strong></td>
+  <td style="padding:6px;border:1px solid #ddd">🔴 <strong>RECOMANAT</strong> — ${country.region} és zona endèmica de Plasmodium</td>
+</tr>
+<tr>
+  <td style="padding:6px;border:1px solid #ddd"><strong>Prova</strong></td>
+  <td style="padding:6px;border:1px solid #ddd">Ag Plasmodium (test ràpid RDT) + Gota gruixuda i frotis. Si febre activa: <strong>URGENT</strong>.</td>
+</tr>
+<tr>
+  <td style="padding:6px;border:1px solid #ddd"><strong>Espècies</strong></td>
+  <td style="padding:6px;border:1px solid #ddd">${
+    country.region==='Àfrica Subsahariana' ? 'P. falciparum (predominant), P. vivax' :
+    country.region==='Asia Meridional' || country.region==='Extrem Orient' ? 'P. vivax, P. falciparum, P. knowlesi (Borneo)' :
+    country.region==='Amèrica Llatina' ? 'P. vivax (predominant), P. falciparum (amazonia)' :
+    'P. vivax, P. falciparum'
+  }</td>
+</tr>
+<tr>
+  <td style="padding:6px;border:1px solid #ddd"><strong>Si positiu</strong></td>
+  <td style="padding:6px;border:1px solid #ddd">Derivació urgent a Unitat de Medicina Tropical (Hospital Clínic Barcelona o referència local).</td>
+</tr>
+</table>` : `<p style="color:#888;font-size:13px">🟢 No indicat — ${country.region} no és zona endèmica de Plasmodium.</p>`;
+  document.getElementById('bodyMalaria').innerHTML = malariaHtml;
 
   if(gender==='F' && hasMGFRisk(country.code)) sections.push(
     {id:'bodyMgf', statusId:'', loadTxt:loadTxts[3], pct:100,
