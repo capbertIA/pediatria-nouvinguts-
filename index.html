@@ -178,7 +178,7 @@ input:focus{outline:none;border-color:var(--teal4);box-shadow:0 0 0 3px rgba(29,
   <div class="card">
     <h2 id="s1title">Dades del pacient nouvingut</h2>
     <p class="card-desc" id="s1desc">Introdueix les dades per generar el pla d'acollida personalitzat.</p>
-    <div class="grid2">
+    <div class="grid2" style="grid-template-columns:1fr 1fr 1fr">
       <div>
         <label class="lbl" id="lblDob">Data de naixement</label>
         <input type="date" id="dob" oninput="calcAge()">
@@ -186,6 +186,10 @@ input:focus{outline:none;border-color:var(--teal4);box-shadow:0 0 0 3px rgba(29,
       <div>
         <label class="lbl" id="lblArrival">Data d'arribada a Catalunya</label>
         <input type="date" id="arrival" oninput="calcAge()">
+      </div>
+      <div>
+        <label class="lbl" id="lblVisit">Data de la visita d'acollida</label>
+        <input type="date" id="visitDate" oninput="calcAge()">
       </div>
     </div>
     <div class="age-pill" id="agePill"></div>
@@ -702,23 +706,33 @@ function applyTranslations(){
 // ── EDAT ──────────────────────────────────────────────────────────
 function calcAge(){
   const dob=document.getElementById('dob').value;
+  const visitD=document.getElementById('visitDate').value;
   if(!dob)return;
-  const d=new Date(dob),now=new Date();
-  let y=now.getFullYear()-d.getFullYear(),m=now.getMonth()-d.getMonth();
+  const ref = visitD ? new Date(visitD) : new Date();
+  const d=new Date(dob);
+  let y=ref.getFullYear()-d.getFullYear(), m=ref.getMonth()-d.getMonth();
   if(m<0){y--;m+=12;}
   const str=y>0?`${y} ${t('ageY')} ${m} ${t('ageM')}`:`${m} ${t('ageM')}`;
   const pill=document.getElementById('agePill');
-  pill.textContent=`${t('edat')}: ${str}`;
+  pill.textContent=`${t('edat')}: ${str}${visitD?' (a la visita d\'acollida)':''}`;
   pill.style.display='block';
 }
 
 function ageStr(){
   const dob=document.getElementById('dob').value;
+  const visitD=document.getElementById('visitDate').value;
   if(!dob)return'';
-  const d=new Date(dob),now=new Date();
-  let y=now.getFullYear()-d.getFullYear(),m=now.getMonth()-d.getMonth();
+  const d=new Date(dob);
+  const ref=visitD?new Date(visitD):new Date();
+  let y=ref.getFullYear()-d.getFullYear(),m=ref.getMonth()-d.getMonth();
   if(m<0){y--;m+=12;}
   return y>0?`${y} ${t('ageY')} ${m} ${t('ageM')}`:`${m} ${t('ageM')}`;
+}
+
+function ageYearsAt(dobStr, refDateStr){
+  const d=new Date(dobStr);
+  const ref=refDateStr?new Date(refDateStr):new Date();
+  return (ref-d)/(1000*60*60*24*365.25);
 }
 
 // ── GÈNERE ────────────────────────────────────────────────────────
@@ -864,24 +878,22 @@ function isValidDate(dateStr){
 function goStep2(){
   const dob=document.getElementById('dob').value;
   const arr=document.getElementById('arrival').value;
+  const visitD=document.getElementById('visitDate').value;
 
-  // Validate dates specifically
   if(!isValidDate(dob)){
-    alert(lang==='ca'?'La data de naixement no és vàlida. Comprova que el dia existeix (p.ex. el 29/02 només existeix en anys bixests).'
-      :lang==='es'?'La fecha de nacimiento no es válida. Comprueba que el día existe (p.ej. el 29/02 solo existe en años bisiestos).'
-      :'The date of birth is not valid. Check that the day exists (e.g. 29/02 only exists in leap years).');
+    alert(lang==='ca'?'La data de naixement no és vàlida.':lang==='es'?'La fecha de nacimiento no es válida.':'The date of birth is not valid.');
     return;
   }
   if(!isValidDate(arr)){
-    alert(lang==='ca'?'La data d\'arribada no és vàlida. Comprova que el dia existeix (p.ex. el 29/02 només existeix en anys bixests).'
-      :lang==='es'?'La fecha de llegada no es válida. Comprueba que el día existe (p.ej. el 29/02 solo existe en años bisiestos).'
-      :'The arrival date is not valid. Check that the day exists (e.g. 29/02 only exists in leap years).');
+    alert(lang==='ca'?'La data d\'arribada no és vàlida.':lang==='es'?'La fecha de llegada no es válida.':'The arrival date is not valid.');
+    return;
+  }
+  if(visitD && !isValidDate(visitD)){
+    alert(lang==='ca'?'La data de la visita no és vàlida.':lang==='es'?'La fecha de la visita no es válida.':'The visit date is not valid.');
     return;
   }
   if(new Date(dob) > new Date(arr)){
-    alert(lang==='ca'?'La data de naixement no pot ser posterior a la data d\'arribada.'
-      :lang==='es'?'La fecha de nacimiento no puede ser posterior a la fecha de llegada.'
-      :'The date of birth cannot be later than the arrival date.');
+    alert(lang==='ca'?'La data de naixement no pot ser posterior a la data d\'arribada.':lang==='es'?'La fecha de nacimiento no puede ser posterior a la fecha de llegada.':'The date of birth cannot be later than the arrival date.');
     return;
   }
   if(!gender||!country){alert(t('errFields'));return;}
@@ -982,162 +994,151 @@ async function generateReport(){
     ? `TB: ✅ Ja han passat ${weeksSince} setmanes. ES POT fer Mantoux/Quantiferó/IGRA.`
     : `TB: ⏳ Han passat ${weeksSince} setmanes (mínim 12). NO fer cribratge fins al ${tbDate.toLocaleDateString('ca-ES')}. Programar visita per aquesta data.`;
 
-  // ── VACUNES: generació en 2 passos ──────────────────────────────
-  // Pas 1: Preguntem a la IA NOMÉS quines dosis porta (resposta JSON)
-  // Pas 2: El JS construeix les taules i el calendari localment
+  // ── VACUNES: 3 dates clau + lògica d'edat correcta ─────────────
+  const visitD = document.getElementById('visitDate').value || new Date().toISOString().split('T')[0];
+  const ageAtVisit = ageYearsAt(dob, visitD);
+  const visitDateObj = new Date(visitD);
 
-  const ASPCAT_VACCINES = [
-    {id:'hexavalent', nom:'Hexavalent (DTPa+HBV+Hib+IPV)', totalDosis:3, edatMax:null},
-    {id:'dtpapi',     nom:'DTPa-PI (reforç 6 anys)',         totalDosis:1, edatMax:10},
-    {id:'dtpa',       nom:'dTpa (11-12 anys)',                totalDosis:1, edatMax:null},
-    {id:'td',         nom:'Td (adults)',                      totalDosis:1, edatMax:null},
-    {id:'rotavirus',  nom:'Rotavirus',                        totalDosis:2, edatMax:0.7},
-    {id:'pcv',        nom:'Pneumococ conjugada (PCV)',         totalDosis:3, edatMax:null},
-    {id:'menb',       nom:'Meningococ B',                     totalDosis:3, edatMax:null},
-    {id:'menc',       nom:'Meningococ C conjugada',           totalDosis:1, edatMax:null},
-    {id:'menacwy',    nom:'Meningococ ACWY',                  totalDosis:2, edatMax:null},
-    {id:'srp',        nom:'Triple vírica (SRP)',               totalDosis:2, edatMax:null},
-    {id:'varicella',  nom:'Varicel·la',                       totalDosis:2, edatMax:null},
-    {id:'hepa',       nom:'Hepatitis A',                      totalDosis:2, edatMax:null},
-    {id:'hpv',        nom:'VPH (Papil·loma humà)',            totalDosis:3, edatMax:null},
-    {id:'grip',       nom:'Grip (anual)',                     totalDosis:1, edatMax:null},
-  ];
+  function getVaccineSchedule(ageY, sex) {
+    const v = [];
+    if (ageY < 7) {
+      v.push({id:'hexavalent', nom:'Hexavalent (DTPa+HBV+Hib+IPV)', total:3});
+    } else if (ageY < 11) {
+      v.push({id:'dtpapi', nom:'DTPa-PI (6-10 anys)', total:1});
+      v.push({id:'hb_sola', nom:'Hepatitis B (HB sola)', total:3});
+      v.push({id:'ipv_sola', nom:'Polio IPV (sola)', total:1});
+    } else {
+      v.push({id:'dtpa', nom:'dTpa (≥11 anys)', total:1});
+      v.push({id:'hb_sola', nom:'Hepatitis B (HB sola)', total:3});
+      v.push({id:'ipv_sola', nom:'Polio IPV (sola)', total:1});
+    }
+    if (ageY < 0.65) v.push({id:'rotavirus', nom:'Rotavirus', total:2});
+    if (ageY < 5) v.push({id:'pcv', nom:'Pneumococ (PCV) — sèrie', total:3});
+    else if (ageY < 19) v.push({id:'pcv', nom:'Pneumococ (PCV) — 1 dosi rescat', total:1});
+    if (ageY < 2) v.push({id:'menb', nom:'Meningococ B', total:3});
+    else v.push({id:'menb', nom:'Meningococ B (rescat, 2 dosis)', total:2});
+    if (ageY < 1) v.push({id:'menc', nom:'Meningococ C conjugada', total:1});
+    v.push({id:'menacwy', nom:'Meningococ ACWY tetravalent', total: ageY<1?1:2});
+    // Triple vírica + Varicel·la: <3a per separat; >=3a MMRV combinada
+    if (ageY < 3) {
+      v.push({id:'srp', nom:'Triple vírica (SRP)', total:2});
+      v.push({id:'varicella', nom:'Varicel·la', total:2});
+    } else {
+      v.push({id:'mmrv', nom:'MMRV (Triple vírica + Varicel·la combinada)', total:2});
+    }
+    v.push({id:'hepa', nom:'Hepatitis A', total:2});
+    // VPH: 1 dosi si <15a en el moment de la 1a dosi; 2 dosis si >=15a
+    if ((sex==='F' && ageY>=9 && ageY<=26)||(sex==='M' && ageY>=9 && ageY<=18)) {
+      v.push({id:'hpv', nom:'VPH (Papil·loma humà)', total: ageY<15?1:2});
+    }
+    if (ageY >= 40) v.push({id:'td', nom:'Td (adults)', total:1});
+    return v;
+  }
 
-  const ageYears = (new Date() - new Date(dob)) / (1000*60*60*24*365.25);
-  const arrDate = new Date(arr);
-
-  // Pregunta la IA quantes dosis té de cada vacuna ASPCAT
+  const vaccineList = getVaccineSchedule(ageAtVisit, gender);
   document.getElementById('bodyVax').innerHTML = '<div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
 
-  const vaxAIprompt = `Pacient: ${cname(country)}, nascut/da ${dob}, edat ${age}, sexe ${gender==='F'?'femení':'masculí'}.
-Documentació: ${vaxDesc}. ${getDosesSummary()!=='Cap dosi marcada'?'Dosis marcades: '+getDosesSummary():''}
+  const vaxIds = vaccineList.map(v=>`"${v.id}": enter 0-${v.total} (dosis completades i vàlides)`).join(',\n  ');
+  const vaxAIprompt = `Pacient de ${cname(country)}, nascut/da ${dob}, edat a la visita ${age} (${ageAtVisit.toFixed(1)} anys), sexe ${gender==='F'?'femení':'masculí'}.
+Documentació vacunal: ${vaxDesc}.${getDosesSummary()!=='Cap dosi marcada'?' Dosis concretes: '+getDosesSummary():''}
+${vaxStatus==='verbal'&&getDosesSummary()==='Cap dosi marcada'?'Família verbalitza vacunació sense especificar. Assumeix la PRIMERA dosi de cada vacuna del PAI de '+cname(country)+' per a persona nascuda el '+dob+'.':''}
+${vaxStatus==='unknown'?'Zero dosis. Tot des de zero.':''}
 
-Consulta el calendari PAI de ${cname(country)} per a persona nascuda el ${dob}.
-${vaxStatus==='verbal' && getDosesSummary()==='Cap dosi marcada' ? 'La família diu que el/la nen/a ha estat vacunat/ada però no especifica res. Assumeix la PRIMERA dosi de cada vacuna del programa PAI de '+cname(country)+'.' : ''}
-${vaxStatus==='unknown' ? 'ZERO dosis. Totes les vacunes des de zero.' : ''}
-
-Respon ÚNICAMENT amb un objecte JSON (sense cap altre text, sense cap explicació, sense \`\`\`json):
+Consulta el calendari PAI/OMS de ${cname(country)} per a persona nascuda el ${dob}.
+Respon ÚNICAMENT amb JSON pur (sense cap text ni backticks):
 {
-  "hexavalent": número de dosis completades (0-3),
-  "dtpapi": 0 o 1,
-  "dtpa": 0 o 1,
-  "td": 0 o 1,
-  "rotavirus": 0 o 2,
-  "pcv": 0-3,
-  "menb": 0-3,
-  "menc": 0-1,
-  "menacwy": 0-2,
-  "srp": 0-2,
-  "varicella": 0-2,
-  "hepa": 0-2,
-  "hpv": 0-3,
-  "grip": 0-1,
-  "notes": "text breu amb vacunes del país NO al calendari ASPCAT si n'hi ha (ex: febre groga)"
+  ${vaxIds},
+  "notes": "vacunes del PAI de ${cname(country)} NO al calendari ASPCAT (ex: febre groga)"
 }`;
 
   try {
     const vaxRes = await fetch('/.netlify/functions/claude', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({system: 'Ets un expert en calendaris vacunals mundials. Respon SEMPRE amb JSON pur, sense cap altre text.', message: vaxAIprompt})
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({system:'Expert en calendaris vacunals OMS/PAI. Respon SEMPRE amb JSON pur, sense cap altre text.', message: vaxAIprompt})
     });
     const vaxData = await vaxRes.json();
     let dosisAI = {};
-    try {
-      const rawText = vaxData.content || '{}';
-      dosisAI = JSON.parse(rawText.replace(/```json|```/g,'').trim());
-    } catch(e) { dosisAI = {}; }
+    try { dosisAI = JSON.parse((vaxData.content||'{}').replace(/```json|```/g,'').trim()); } catch(e2){}
 
-    // ── Construeix taula 1: Immunització prèvia ──────────────────
-    const rowsStatus = ASPCAT_VACCINES.map(v => {
-      const dosis = dosisAI[v.id] ?? 0;
-      const total = v.totalDosis;
-      // Skip rotavirus si >8m, DTPa-PI si >10a
-      if (v.id==='rotavirus' && ageYears > 0.7) return `<tr><td style="padding:6px;border:1px solid #ddd">${v.nom}</td><td style="padding:6px;text-align:center;border:1px solid #ddd">—</td><td style="padding:6px;border:1px solid #ddd;color:#888">Fora de rang d'edat</td></tr>`;
-      if (v.id==='dtpapi' && ageYears > 10) return `<tr><td style="padding:6px;border:1px solid #ddd">${v.nom}</td><td style="padding:6px;text-align:center;border:1px solid #ddd">—</td><td style="padding:6px;border:1px solid #ddd;color:#888">Substituït per dTpa a >10 anys</td></tr>`;
-      // HPV: només si edat escau
-      if (v.id==='hpv' && !((gender==='F' && ageYears>=9 && ageYears<=26)||(gender==='M' && ageYears>=9 && ageYears<=18))) return `<tr><td style="padding:6px;border:1px solid #ddd">${v.nom}</td><td style="padding:6px;text-align:center;border:1px solid #ddd">—</td><td style="padding:6px;border:1px solid #ddd;color:#888">No aplica per edat/sexe</td></tr>`;
-      const estat = dosis >= total ? '✅ Completa' : dosis > 0 ? `⚠️ ${dosis}/${total} dosis` : '❌ Cap dosi';
-      const bg = dosis >= total ? '#f0fff0' : dosis > 0 ? '#fffbe6' : '#fff5f5';
-      return `<tr style="background:${bg}"><td style="padding:6px;border:1px solid #ddd">${v.nom}</td><td style="padding:6px;text-align:center;border:1px solid #ddd">${dosis}/${total}</td><td style="padding:6px;border:1px solid #ddd">${estat}</td></tr>`;
+    // TAULA 1: Immunització prèvia
+    const rowsStatus = vaccineList.map(v => {
+      const d = Math.min(dosisAI[v.id]??0, v.total);
+      const estat = d>=v.total?'<span style="color:#2e7d32;font-weight:600">✅ Completa</span>':d>0?`<span style="color:#e65100;font-weight:600">⚠️ ${d}/${v.total} dosis</span>`:'<span style="color:#c62828;font-weight:600">❌ Cap dosi</span>';
+      const bg = d>=v.total?'#f0fff0':d>0?'#fffde7':'#fff5f5';
+      return `<tr style="background:${bg}"><td style="padding:7px;border:1px solid #ddd">${v.nom}</td><td style="padding:7px;text-align:center;border:1px solid #ddd;font-weight:600">${d}/${v.total}</td><td style="padding:7px;border:1px solid #ddd">${estat}</td></tr>`;
     }).join('');
 
-    // ── Construeix taula 2: Calendari accelerat ──────────────────
-    // Determina vacunes pendents
-    const pendents = ASPCAT_VACCINES.filter(v => {
-      const dosis = dosisAI[v.id] ?? 0;
-      if (v.id==='rotavirus' && ageYears > 0.7) return false;
-      if (v.id==='dtpapi' && ageYears > 10) return false;
-      if (v.id==='grip') return false; // anual, no catch-up
-      if (v.id==='hpv' && !((gender==='F' && ageYears>=9 && ageYears<=26)||(gender==='M' && ageYears>=9 && ageYears<=18))) return false;
-      return dosis < v.totalDosis;
-    }).map(v => ({...v, dosisPendents: v.totalDosis - (dosisAI[v.id]??0)}));
+    // TAULA 2: Calendari accelerat
+    // Intervals mínims en dies entre dosis de la mateixa vacuna
+    const INTV = {hexavalent:28,dtpapi:0,dtpa:0,hb_sola:28,ipv_sola:0,rotavirus:28,pcv:28,menb:28,menc:0,menacwy:56,mmrv:28,srp:28,varicella:28,hepa:168,hpv:56,td:0};
+    let tracker = {};
+    vaccineList.forEach(v => {
+      const d = Math.min(dosisAI[v.id]??0, v.total);
+      if(d < v.total) tracker[v.id] = {restants:v.total-d, completades:d, ultimaDia:-999, nom:v.nom, total:v.total};
+    });
 
-    // Distribueix en visites (màx 5 vacunes/visita, intervals mínims)
     const visits = [];
-    let pending = pendents.map(v => ({...v, dosisDades: dosisAI[v.id]??0, dosisRestants: v.totalDosis-(dosisAI[v.id]??0), lastVisit: -1}));
-
-    for (let v = 0; v < 5 && pending.some(p=>p.dosisRestants>0); v++) {
-      const visitDate = new Date(arrDate);
-      visitDate.setDate(visitDate.getDate() + (v===0?0:v===1?28:v===2?56:v===3?90:180));
+    const offsets = [0, 28, 56, 84, 180, 270];
+    for(let vi=0; vi<offsets.length; vi++){
+      const dOffset = offsets[vi];
+      const vDate = new Date(visitDateObj);
+      vDate.setDate(vDate.getDate()+dOffset);
       const vacAvui = [];
-      let count = 0;
-      pending.forEach(p => {
-        if (p.dosisRestants > 0 && count < 5) {
-          // Interval mínim: 4 setmanes entre dosis de la mateixa vacuna
-          const weeksSinceLastDose = p.lastVisit >= 0 ? (v - p.lastVisit) * (v===1?4:v===2?4:v===3?5:13) : 99;
-          // HPV: 2a dosi a +2 mesos, 3a a +6 mesos
-          if (p.id==='hpv' && p.dosisDades+p.dosisRestants-p.dosisRestants===0 && v>0 && v<2) return; // 1a dosi visita 1
-          if (p.id==='hpv' && p.dosisRestants===2 && v!==0) return; // forçar 1a dosi avui
-          vacAvui.push(`${p.nom} (${p.dosisDades + (p.totalDosis-p.dosisRestants) + 1}a)`);
-          p.dosisRestants--;
-          p.dosisDades++;
-          p.lastVisit = v;
-          count++;
-        }
+      Object.entries(tracker).forEach(([id, tr]) => {
+        if(vacAvui.length >= 5) return;
+        if(tr.restants <= 0) return;
+        const minDies = INTV[id]??28;
+        // HepA 2a: mínim 6 mesos
+        const diesDesUltima = dOffset - tr.ultimaDia;
+        if(tr.ultimaDia >= 0 && diesDesUltima < minDies) return;
+        if(id==='hepa' && tr.completades>=1 && diesDesUltima < 168) return;
+        if(id==='hb_sola' && tr.completades>=2 && diesDesUltima < 168) return;
+        const numDosi = tr.completades + 1;
+        vacAvui.push(`${tr.nom} <strong>(${numDosi}a de ${tr.total})</strong>`);
+        tr.restants--;
+        tr.completades++;
+        tr.ultimaDia = dOffset;
       });
-      if (vacAvui.length > 0) {
-        visits.push({
-          num: v+1,
-          date: visitDate.toLocaleDateString('ca-ES'),
-          vac: vacAvui,
-          notes: v===0?'Primera visita acollida':v===1?'4 setmanes':v===2?'8 setmanes':v===3?'3 mesos':v===4?'6 mesos':''
-        });
+      if(vacAvui.length>0){
+        const label = vi===0?'Visita acollida':vi===1?'+4 setm.':vi===2?'+8 setm.':vi===3?'+3 mesos':vi===4?'+6 mesos':'+9 mesos';
+        visits.push({num:vi+1, date:vDate.toLocaleDateString('ca-ES'), vac:vacAvui, label});
       }
     }
 
-    const rowsCalendari = visits.map(vi => `
+    const rowsCalendari = visits.map(vi=>`
 <tr>
-  <td style="padding:8px;border:1px solid #ddd;font-weight:600">Visita ${vi.num}</td>
-  <td style="padding:8px;border:1px solid #ddd">${vi.date}</td>
-  <td style="padding:8px;border:1px solid #ddd">${vi.vac.join('<br>')}</td>
-  <td style="padding:8px;border:1px solid #ddd;color:#666;font-size:12px">${vi.notes}</td>
+  <td style="padding:8px;border:1px solid #aaa;white-space:nowrap"><strong>Visita ${vi.num}</strong><br><small style="color:rgba(255,255,255,0.7)">${vi.label}</small></td>
+  <td style="padding:8px;border:1px solid #aaa;white-space:nowrap">${vi.date}</td>
+  <td style="padding:8px;border:1px solid #aaa;line-height:1.9">${vi.vac.join('<br>')}</td>
 </tr>`).join('');
 
-    const notesExtra = dosisAI.notes ? `<p style="font-size:12px;color:#666;margin-top:10px;padding:8px;background:#f5f5f5;border-radius:6px">ℹ️ ${dosisAI.notes}</p>` : '';
+    const notesVax = dosisAI.notes?`<div style="margin-top:12px;padding:10px;background:#f5f5f5;border-radius:8px;font-size:12px;color:#555">ℹ️ <strong>Vacunes del PAI de ${cname(country)} no incloses al calendari ASPCAT:</strong> ${dosisAI.notes}</div>`:'';
 
     document.getElementById('bodyVax').innerHTML = `
-<h3 style="margin:0 0 10px;color:#1D9E75">1. Immunització prèvia assumida</h3>
+<h3 style="color:#1D9E75;margin:0 0 6px">1. Immunització prèvia assumida</h3>
+<p style="font-size:12px;color:#888;margin-bottom:8px">Edat a la visita (${visitD}): <strong>${age}</strong> · ${cname(country)} · Doc: ${vaxStatus}</p>
 <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px">
-<tr style="background:#f0f0f0"><th style="padding:6px;border:1px solid #ddd">Vacuna</th><th style="padding:6px;text-align:center;border:1px solid #ddd;width:15%">Dosis</th><th style="padding:6px;border:1px solid #ddd;width:25%">Estat</th></tr>
+<tr style="background:#f0f0f0"><th style="padding:7px;border:1px solid #ddd;text-align:left">Vacuna ASPCAT</th><th style="padding:7px;border:1px solid #ddd;text-align:center;width:14%">Dosis</th><th style="padding:7px;border:1px solid #ddd;text-align:left;width:28%">Estat</th></tr>
 ${rowsStatus}
 </table>
-<h3 style="margin:0 0 10px;color:#1D9E75">2. Calendari d'immunització accelerada — ASPCAT 2025</h3>
-<p style="font-size:12px;color:#666;margin-bottom:8px">Inici: ${arr} · Edat: ${age} · Vacunes pendents: ${pendents.length}</p>
-<table style="width:100%;border-collapse:collapse;font-size:13px">
+<h3 style="color:#1D9E75;margin:0 0 6px">2. Calendari d'immunització accelerada — ASPCAT 2025</h3>
+<p style="font-size:12px;color:#888;margin-bottom:8px">Inici: <strong>${visitD}</strong> · Vacunes pendents: <strong>${Object.values(tracker).reduce((a,v)=>a+(v.restants||0),0)} dosis</strong></p>
+${visits.length===0
+  ?'<div style="padding:14px;background:#e8f5e9;border-radius:8px;color:#2e7d32;font-weight:500">✅ Calendari ASPCAT complet!</div>'
+  :`<table style="width:100%;border-collapse:collapse;font-size:13px">
 <tr style="background:#0F6E56;color:white">
-  <th style="padding:8px;border:1px solid #555;width:12%">Visita</th>
-  <th style="padding:8px;border:1px solid #555;width:20%">Data</th>
-  <th style="padding:8px;border:1px solid #555">Vacunes</th>
-  <th style="padding:8px;border:1px solid #555;width:15%">Notes</th>
+  <th style="padding:8px;border:1px solid #555;width:20%">Visita</th>
+  <th style="padding:8px;border:1px solid #555;width:18%">Data</th>
+  <th style="padding:8px;border:1px solid #555">Vacunes a administrar</th>
 </tr>
-${rowsCalendari || '<tr><td colspan="4" style="padding:10px;text-align:center;border:1px solid #ddd;color:#4caf50">✅ Calendari ASPCAT complet!</td></tr>'}
-</table>
-${notesExtra}`;
+${rowsCalendari}
+</table>`}
+${notesVax}`;
 
   } catch(e) {
     document.getElementById('bodyVax').innerHTML = `<p style="color:#A32D2D"><strong>Error:</strong> ${e.message}</p>`;
   }
+
 
   const sections=[
 
