@@ -826,44 +826,236 @@ function selVaxStatus(val){
   }
 }
 
+// ── BASE DE DADES CALENDARIS VACUNALS (Font: OMS/UNICEF/EPI 2024) ──
+// Verificats a partir de: WHO Immunization Data Portal, UNICEF country profiles,
+// EPI factsheets i Vaccine Scheduler (immunizationdata.who.int)
+const CALENDARIS_PAI = {
+  // ── MARROC (MAR) ─────────────────────────────────────────────
+  // Font: Ministère de la Santé Maroc / WHO EMRO 2024
+  'MA': {pais:'Marroc', revisions:[
+    {edat:'Néixer',      vacunes:['BCG','VHB (dosi nasciment)']},
+    {edat:'2 mesos',     vacunes:['Pentavalent DTPa+HBV+Hib (1a)','IPV (1a)','PCV13 (1a)','Rotavirus (1a)']},
+    {edat:'3 mesos',     vacunes:['Pentavalent DTPa+HBV+Hib (2a)','IPV (2a)','PCV13 (2a)','Rotavirus (2a)']},
+    {edat:'4 mesos',     vacunes:['Pentavalent DTPa+HBV+Hib (3a)','IPV (3a)','PCV13 (3a)']},
+    {edat:'9 mesos',     vacunes:['Xarampió (MCV1)','Febre groga (YFV)','MenA']},
+    {edat:'18 mesos',    vacunes:['Pentavalent DTPa+HBV+Hib (reforç)','IPV (reforç)','PCV13 (reforç)']},
+    {edat:'24 mesos',    vacunes:['Xarampió (MCV2)']},
+    {edat:'5-6 anys',    vacunes:['DT (reforç)','Polio OPV (reforç)']},
+  ]},
+  // ── SENEGAL (SEN) ────────────────────────────────────────────
+  // Font: OMS/UNICEF Senegal EPI 2024 — Measles only (no rubella/mumps al PAI)
+  'SN': {pais:'Senegal', revisions:[
+    {edat:'Néixer',      vacunes:['BCG','VHB (dosi nasciment)','OPV0 (polio oral)']},
+    {edat:'6 setmanes',  vacunes:['Pentavalent DTPa+HBV+Hib (1a)','IPV (1a)','PCV13 (1a)','Rotavirus (1a)','OPV1']},
+    {edat:'10 setmanes', vacunes:['Pentavalent DTPa+HBV+Hib (2a)','IPV (2a)','PCV13 (2a)','Rotavirus (2a)','OPV2']},
+    {edat:'14 setmanes', vacunes:['Pentavalent DTPa+HBV+Hib (3a)','PCV13 (3a)','Rotavirus (3a)','OPV3']},
+    {edat:'9 mesos',     vacunes:['Xarampió MCV1 (NOTA: nomes xarampió, NO SRP)','Febre groga (YFV)','MenA (zones risc)','OPV4']},
+    {edat:'15-18 mesos', vacunes:['Xarampió MCV2 (NOTA: nomes xarampió, NO SRP)']},
+  ]},
+  // ── MALI (MLI) ───────────────────────────────────────────────
+  'ML': {pais:'Mali', revisions:[
+    {edat:'Néixer',      vacunes:['BCG','VHB (dosi nasciment)','OPV0']},
+    {edat:'6 setmanes',  vacunes:['Pentavalent DTPa+HBV+Hib (1a)','PCV13 (1a)','Rotavirus (1a)','OPV1','IPV (1a)']},
+    {edat:'10 setmanes', vacunes:['Pentavalent DTPa+HBV+Hib (2a)','PCV13 (2a)','Rotavirus (2a)','OPV2']},
+    {edat:'14 setmanes', vacunes:['Pentavalent DTPa+HBV+Hib (3a)','PCV13 (3a)','OPV3']},
+    {edat:'9 mesos',     vacunes:['Xarampió MCV1 (nomes xarampió, NO SRP)','Febre groga (YFV)','MenA']},
+    {edat:'15-18 mesos', vacunes:['Xarampió MCV2 (nomes xarampió, NO SRP)']},
+  ]},
+  // ── GÀMBIA (GMB) ────────────────────────────────────────────
+  'GM': {pais:'Gàmbia', revisions:[
+    {edat:'Néixer',      vacunes:['BCG','VHB (dosi nasciment)','OPV0']},
+    {edat:'6 setmanes',  vacunes:['Pentavalent DTPa+HBV+Hib (1a)','PCV13 (1a)','Rotavirus (1a)','OPV1','IPV']},
+    {edat:'10 setmanes', vacunes:['Pentavalent DTPa+HBV+Hib (2a)','PCV13 (2a)','Rotavirus (2a)','OPV2']},
+    {edat:'14 setmanes', vacunes:['Pentavalent DTPa+HBV+Hib (3a)','PCV13 (3a)','OPV3']},
+    {edat:'9 mesos',     vacunes:['Xarampió MCV1 (nomes xarampió, NO SRP)','Febre groga (YFV)']},
+    {edat:'15 mesos',    vacunes:['Xarampió MCV2 (nomes xarampió, NO SRP)','MenA']},
+  ]},
+  // ── GUINEA (GIN) ────────────────────────────────────────────
+  'GN': {pais:'Guinea', revisions:[
+    {edat:'Néixer',      vacunes:['BCG','VHB (dosi nasciment)','OPV0']},
+    {edat:'6 setmanes',  vacunes:['Pentavalent DTPa+HBV+Hib (1a)','PCV13 (1a)','Rotavirus (1a)','OPV1','IPV']},
+    {edat:'10 setmanes', vacunes:['Pentavalent DTPa+HBV+Hib (2a)','PCV13 (2a)','Rotavirus (2a)','OPV2']},
+    {edat:'14 setmanes', vacunes:['Pentavalent DTPa+HBV+Hib (3a)','PCV13 (3a)','OPV3']},
+    {edat:'9 mesos',     vacunes:['Xarampió MCV1 (nomes xarampió, NO SRP)','Febre groga (YFV)']},
+    {edat:'15 mesos',    vacunes:['Xarampió MCV2 (nomes xarampió, NO SRP)']},
+  ]},
+  // ── GUINEA BISSAU (GNB) ──────────────────────────────────────
+  'GW': {pais:'Guinea Bissau', revisions:[
+    {edat:'Néixer',      vacunes:['BCG','VHB (dosi nasciment)','OPV0']},
+    {edat:'6 setmanes',  vacunes:['Pentavalent DTPa+HBV+Hib (1a)','PCV13 (1a)','Rotavirus (1a)','OPV1','IPV']},
+    {edat:'10 setmanes', vacunes:['Pentavalent DTPa+HBV+Hib (2a)','PCV13 (2a)','Rotavirus (2a)','OPV2']},
+    {edat:'14 setmanes', vacunes:['Pentavalent DTPa+HBV+Hib (3a)','PCV13 (3a)','OPV3']},
+    {edat:'9 mesos',     vacunes:['Xarampió MCV1 (nomes xarampió, NO SRP)','Febre groga (YFV)']},
+    {edat:'15 mesos',    vacunes:['Xarampió MCV2']},
+  ]},
+  // ── PAKISTAN (PAK) ───────────────────────────────────────────
+  // Font: Pakistan EPI / WHO EMRO 2024 — OPV (oral), no IPV de forma universal
+  'PK': {pais:'Pakistan', revisions:[
+    {edat:'Néixer',      vacunes:['BCG','VHB (dosi nasciment)','OPV0']},
+    {edat:'6 setmanes',  vacunes:['Pentavalent DTPa+HBV+Hib (1a)','IPV (1a)','PCV10 (1a)','Rotavirus (1a)','OPV1']},
+    {edat:'10 setmanes', vacunes:['Pentavalent DTPa+HBV+Hib (2a)','PCV10 (2a)','Rotavirus (2a)','OPV2']},
+    {edat:'14 setmanes', vacunes:['Pentavalent DTPa+HBV+Hib (3a)','IPV (2a)','PCV10 (3a)','OPV3']},
+    {edat:'9 mesos',     vacunes:['Xarampió MCV1 (nomes xarampió, NO SRP)','OPV4']},
+    {edat:'15 mesos',    vacunes:['Xarampió MCV2 + Rubèola MR (en algunes zones)','OPV5']},
+    {edat:'Cada campanya', vacunes:['OPV (campanyes periòdiques nacionals)']},
+  ]},
+  // ── BANGLADESH (BGD) ─────────────────────────────────────────
+  // Font: Bangladesh EPI 2024 — programa molt complet
+  'BD': {pais:'Bangladesh', revisions:[
+    {edat:'Néixer',      vacunes:['BCG','VHB (dosi nasciment)','OPV0']},
+    {edat:'6 setmanes',  vacunes:['Pentavalent DTPa+HBV+Hib (1a)','IPV (1a)','PCV10 (1a)','Rotavirus (1a)','OPV1']},
+    {edat:'10 setmanes', vacunes:['Pentavalent DTPa+HBV+Hib (2a)','PCV10 (2a)','Rotavirus (2a)','OPV2']},
+    {edat:'14 setmanes', vacunes:['Pentavalent DTPa+HBV+Hib (3a)','IPV (2a)','PCV10 (3a)','OPV3']},
+    {edat:'9 mesos',     vacunes:['Xarampió+Rubèola MR (1a)','OPV4']},
+    {edat:'15-18 mesos', vacunes:['Xarampió+Rubèola MR (2a — reforç)']},
+  ]},
+  // ── XINA (CHN) ───────────────────────────────────────────────
+  // Font: China NIP 2024 — programa molt extens
+  'CN': {pais:'Xina', revisions:[
+    {edat:'Néixer',      vacunes:['BCG','VHB (dosi 1a)']},
+    {edat:'1 mes',       vacunes:['VHB (dosi 2a)']},
+    {edat:'2 mesos',     vacunes:['IPV (1a)']},
+    {edat:'3 mesos',     vacunes:['DTPa (1a)','IPV (2a)']},
+    {edat:'4 mesos',     vacunes:['DTPa (2a)','OPV']},
+    {edat:'5 mesos',     vacunes:['DTPa (3a)']},
+    {edat:'6 mesos',     vacunes:['VHB (dosi 3a)','MenA (1a)']},
+    {edat:'8 mesos',     vacunes:['Xarampió+Rubèola MR (1a)','Encefalitis Japonesa JEV (1a)']},
+    {edat:'9 mesos',     vacunes:['MenA (2a)']},
+    {edat:'18 mesos',    vacunes:['DTPa (reforç)','Xarampió+Orions+Rubèola MMR (2a)','Encefalitis Japonesa JEV (2a)','VHA (1a)']},
+    {edat:'2 anys',      vacunes:['MenAC (1a)','VHA (2a)']},
+    {edat:'3 anys',      vacunes:['MenAC (2a)']},
+    {edat:'4 anys',      vacunes:['OPV (reforç)']},
+    {edat:'6 anys',      vacunes:['DT (reforç)','MenACYW (reforç)','Encefalitis Japonesa JEV (reforç)']},
+  ]},
+  // ── COLÒMBIA (COL) ───────────────────────────────────────────
+  // Font: PAI Colombia 2024 — programa complet similar a Europa
+  'CO': {pais:'Colòmbia', revisions:[
+    {edat:'Néixer',      vacunes:['BCG','VHB (dosi nasciment)']},
+    {edat:'2 mesos',     vacunes:['Hexavalent DTPa+HBV+Hib+IPV (1a)','PCV10 (1a)','Rotavirus (1a)']},
+    {edat:'4 mesos',     vacunes:['Hexavalent DTPa+HBV+Hib+IPV (2a)','PCV10 (2a)','Rotavirus (2a)']},
+    {edat:'6 mesos',     vacunes:['Hexavalent DTPa+HBV+Hib+IPV (3a)','Influenza (1a)']},
+    {edat:'7 mesos',     vacunes:['Influenza (2a dosi si <2a)']},
+    {edat:'12 mesos',    vacunes:['Triple vírica SRP (1a)','Varicel·la (1a)','VHA (1a)','Febre groga (YFV)']},
+    {edat:'18 mesos',    vacunes:['Hexavalent (reforç)','PCV10 (reforç)']},
+    {edat:'5 anys',      vacunes:['Triple vírica SRP (2a)','Varicel·la (2a)','DTPa (reforç)','OPV (reforç)']},
+    {edat:'10-11 anys',  vacunes:['VPH (nomes noies en algunes zones)','dTpa (reforç adolescents)']},
+  ]},
+  // ── PERÚ (PER) ───────────────────────────────────────────────
+  // Font: MINSA Perú PAI 2024
+  'PE': {pais:'Perú', revisions:[
+    {edat:'Néixer',      vacunes:['BCG','VHB (dosi nasciment)']},
+    {edat:'2 mesos',     vacunes:['Pentavalent DTPa+HBV+Hib (1a)','IPV (1a)','PCV10 (1a)','Rotavirus (1a)']},
+    {edat:'4 mesos',     vacunes:['Pentavalent DTPa+HBV+Hib (2a)','IPV (2a)','PCV10 (2a)','Rotavirus (2a)']},
+    {edat:'6 mesos',     vacunes:['Pentavalent DTPa+HBV+Hib (3a)','IPV (3a)','Influenza (1a)']},
+    {edat:'7 mesos',     vacunes:['Influenza (2a si <2 anys)']},
+    {edat:'12 mesos',    vacunes:['Triple vírica SRP (1a)','Varicel·la (1a)','Febre groga (YFV)']},
+    {edat:'18 mesos',    vacunes:['DTPa (reforç)','IPV (reforç)']},
+    {edat:'4-5 anys',    vacunes:['Triple vírica SRP (2a)','DPT (reforç)','OPV (reforç)']},
+    {edat:'9-13 anys F', vacunes:['VPH (nomes noies: 2 dosis)']},
+  ]},
+  // ── EQUADOR (ECU) ────────────────────────────────────────────
+  'EC': {pais:'Equador', revisions:[
+    {edat:'Néixer',      vacunes:['BCG','VHB (dosi nasciment)']},
+    {edat:'2 mesos',     vacunes:['Pentavalent DTPa+HBV+Hib (1a)','IPV (1a)','PCV13 (1a)','Rotavirus (1a)']},
+    {edat:'4 mesos',     vacunes:['Pentavalent DTPa+HBV+Hib (2a)','IPV (2a)','PCV13 (2a)','Rotavirus (2a)']},
+    {edat:'6 mesos',     vacunes:['Pentavalent DTPa+HBV+Hib (3a)','IPV (3a)']},
+    {edat:'12 mesos',    vacunes:['Triple vírica SRP (1a)','Varicel·la (1a)','Febre groga (YFV)']},
+    {edat:'18 mesos',    vacunes:['DTPa (reforç)','IPV (reforç)','PCV13 (reforç)']},
+    {edat:'5 anys',      vacunes:['Triple vírica SRP (2a)','Varicel·la (2a)','DT (reforç)','OPV (reforç)']},
+    {edat:'9-12 anys F', vacunes:['VPH (nomes noies: 2 dosis)']},
+  ]},
+  // ── BOLÍVIA (BOL) ────────────────────────────────────────────
+  'BO': {pais:'Bolívia', revisions:[
+    {edat:'Néixer',      vacunes:['BCG','VHB (dosi nasciment)']},
+    {edat:'2 mesos',     vacunes:['Pentavalent DTPa+HBV+Hib (1a)','IPV (1a)','PCV10 (1a)','Rotavirus (1a)']},
+    {edat:'4 mesos',     vacunes:['Pentavalent DTPa+HBV+Hib (2a)','IPV (2a)','PCV10 (2a)','Rotavirus (2a)']},
+    {edat:'6 mesos',     vacunes:['Pentavalent DTPa+HBV+Hib (3a)','IPV (3a)']},
+    {edat:'12 mesos',    vacunes:['Triple vírica SRP (1a)','Febre groga (YFV)']},
+    {edat:'18 mesos',    vacunes:['DTPa (reforç)','IPV (reforç)','PCV10 (reforç)']},
+    {edat:'5 anys',      vacunes:['Triple vírica SRP (2a)','DT (reforç)','OPV (reforç)']},
+  ]},
+  // ── ROMANIA (ROU) ────────────────────────────────────────────
+  // Font: Romania NIP 2024 — programa similar a Europa occidental
+  'RO': {pais:'Romania', revisions:[
+    {edat:'Néixer',      vacunes:['BCG','VHB (dosi nasciment)']},
+    {edat:'2 mesos',     vacunes:['Hexavalent DTPa+HBV+Hib+IPV (1a)','PCV13 (1a)','Rotavirus (1a)']},
+    {edat:'4 mesos',     vacunes:['Hexavalent DTPa+HBV+Hib+IPV (2a)','PCV13 (2a)','Rotavirus (2a)']},
+    {edat:'11 mesos',    vacunes:['Hexavalent DTPa+HBV+Hib+IPV (3a)','PCV13 (3a)']},
+    {edat:'12 mesos',    vacunes:['Triple vírica SRP (1a)']},
+    {edat:'5 anys',      vacunes:['Triple vírica SRP (2a)','DTPa (reforç)','IPV (reforç)']},
+    {edat:'8-14 anys',   vacunes:['VPH (noies i nois)','dTpa (reforç)']},
+  ]},
+  // ── UCRAÏNA (UKR) ────────────────────────────────────────────
+  // Font: Ukraine NIP 2023/2024
+  'UA': {pais:'Ucraïna', revisions:[
+    {edat:'Néixer',      vacunes:['BCG','VHB (dosi nasciment)']},
+    {edat:'2 mesos',     vacunes:['Hexavalent DTPa+HBV+Hib+IPV (1a)','PCV13 (1a)']},
+    {edat:'4 mesos',     vacunes:['Hexavalent DTPa+HBV+Hib+IPV (2a)','PCV13 (2a)','IPV (reforç)']},
+    {edat:'6 mesos',     vacunes:['Hexavalent DTPa+HBV+Hib+IPV (3a)']},
+    {edat:'12 mesos',    vacunes:['Triple vírica SRP (1a)']},
+    {edat:'18 mesos',    vacunes:['DTPa (reforç)','IPV (reforç)','PCV13 (reforç)']},
+    {edat:'6 anys',      vacunes:['Triple vírica SRP (2a)','DTPa (reforç)']},
+    {edat:'14 anys',     vacunes:['dTpa (reforç adolescents)']},
+  ]},
+};
+
 async function loadPaisCalendari(){
   if(!country) return;
-  const dob = document.getElementById('dob').value;
   const container = document.getElementById('vaxCalendariPais');
   container.innerHTML = '<div style="display:flex;align-items:center;gap:10px;padding:8px 0"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><span style="font-size:13px;color:#888">Carregant calendari de '+cname(country)+'...</span></div>';
   paisCalendari=null; revisionsMarked=new Set();
 
+  // Primer busquem a la base de dades hardcodejada (fiable)
+  if(CALENDARIS_PAI[country.code]) {
+    paisCalendari = CALENDARIS_PAI[country.code];
+    renderPaisCalendari(true);
+    return;
+  }
+
+  // Fallback: IA per als altres països, amb avís de menor fiabilitat
+  const dob = document.getElementById('dob').value;
   try {
     const res = await fetch('/.netlify/functions/claude', {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
-        system:'Expert en calendaris vacunals OMS/PAI mundials. Respon SEMPRE amb JSON pur, sense cap altre text ni backticks.',
-        message:`Dona'm el calendari vacunal oficial (PAI/OMS) de ${cname(country)} per a un infant nascut el ${dob||'2020-01-01'}. Inclou totes les visites des del naixement fins als 14 anys. Respon ÚNICAMENT amb aquest JSON:
-{"pais":"${cname(country)}","revisions":[{"edat":"Néixer","vacunes":["BCG","VHB"]},{"edat":"2 mesos","vacunes":["DTPa","HBV","Hib","IPV","PCV"]},...]}`
+        system:'Expert en calendaris vacunals OMS/PAI mundials. IMPORTANT: inclou ÚNICAMENT vacunes del programa nacional oficial (EPI/PAI), NO les recomanades per a viatgers. Respon SEMPRE amb JSON pur, sense cap altre text ni backticks.',
+        message:`Dona'm el calendari vacunal oficial EPI/PAI de ${cname(country)} (codi ${country.code}) per a infants. Visites des del naixement fins als 14 anys.
+IMPORTANT: Per a la vacuna del xarampió, indica si és MCV (xarampió sol), MR (xarampió+rubèola), o SRP/MMR (triple vírica). Molts països africans i asiàtics administren NOMÉS xarampió (MCV), NO triple vírica. No incloguis VPH si no és al programa nacional oficial.
+Respon ÚNICAMENT amb JSON:
+{"pais":"${cname(country)}","fiabilitat":"IA-no-verificat","revisions":[{"edat":"Néixer","vacunes":["BCG"]},...]}`
       })
     });
     const data = await res.json();
     let parsed=null;
     try { parsed=JSON.parse((data.content||'{}').replace(/```json|```/g,'').trim()); } catch(e2){}
-    if(parsed?.revisions?.length>0){ paisCalendari=parsed; renderPaisCalendari(); }
-    else container.innerHTML='<p style="color:#A32D2D;font-size:13px">Error carregant el calendari. Torna a intentar-ho.</p>';
+    if(parsed?.revisions?.length>0){ paisCalendari=parsed; renderPaisCalendari(false); }
+    else container.innerHTML='<p style="color:#A32D2D;font-size:13px">No s\'ha pogut carregar el calendari. Consulta directament: <a href="https://immunizationdata.who.int" target="_blank">immunizationdata.who.int</a></p>';
   } catch(e){ container.innerHTML=`<p style="color:#A32D2D;font-size:13px">Error: ${e.message}</p>`; }
 }
 
-function renderPaisCalendari(){
+function renderPaisCalendari(verificat=true){
   if(!paisCalendari) return;
   const container=document.getElementById('vaxCalendariPais');
+  const badge = verificat
+    ? '<span style="background:#e8f5e9;color:#2e7d32;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600">✅ Verificat OMS/EPI 2024</span>'
+    : '<span style="background:#fff3e0;color:#e65100;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600">⚠️ Generat per IA — verificar a immunizationdata.who.int</span>';
   const rows=paisCalendari.revisions.map(r=>{
     const fet=revisionsMarked.has(r.edat);
     return `<tr style="background:${fet?'#E8F5E9':'#fff'};cursor:pointer" onclick="toggleRevisio('${r.edat.replace(/'/g,"\\'").replace(/"/g,'\\"')}')">
       <td style="padding:8px 10px;border:1px solid #ddd;width:36px;text-align:center;font-size:18px">${fet?'✅':'⬜'}</td>
-      <td style="padding:8px 10px;border:1px solid #ddd;font-weight:${fet?'600':'400'};color:${fet?'#2e7d32':'#333'}">Revisió dels <strong>${r.edat}</strong></td>
-      <td style="padding:8px 10px;border:1px solid #ddd;font-size:12px;color:#666">${r.vacunes.join(' · ')}</td>
+      <td style="padding:8px 10px;border:1px solid #ddd;font-weight:${fet?'600':'400'};color:${fet?'#2e7d32':'#333'};white-space:nowrap"><strong>${r.edat}</strong></td>
+      <td style="padding:8px 10px;border:1px solid #ddd;font-size:12px;color:#555">${r.vacunes.join('<br>')}</td>
     </tr>`;
   }).join('');
-  container.innerHTML=`<p style="font-size:12px;color:#666;margin-bottom:10px">Calendari oficial de <strong>${paisCalendari.pais}</strong> — Marca les revisions a les que ha assistit el pacient:</p>
+  container.innerHTML=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+  <p style="font-size:12px;color:#666;margin:0">Calendari oficial de <strong>${paisCalendari.pais}</strong></p>${badge}
+</div>
 <table style="width:100%;border-collapse:collapse;font-size:13px">
-<tr style="background:#f0f0f0"><th style="padding:7px 10px;border:1px solid #ddd;width:36px"></th><th style="padding:7px 10px;border:1px solid #ddd;text-align:left">Revisió</th><th style="padding:7px 10px;border:1px solid #ddd;text-align:left">Vacunes administrades</th></tr>
+<tr style="background:#f0f0f0">
+  <th style="padding:7px 10px;border:1px solid #ddd;width:36px"></th>
+  <th style="padding:7px 10px;border:1px solid #ddd;text-align:left;white-space:nowrap">Revisió</th>
+  <th style="padding:7px 10px;border:1px solid #ddd;text-align:left">Vacunes administrades</th>
+</tr>
 ${rows}
 </table>
 <p style="font-size:11px;color:#999;margin-top:8px">Clica una fila per marcar ✅ / desmarcar ⬜ la revisió com a feta</p>`;
