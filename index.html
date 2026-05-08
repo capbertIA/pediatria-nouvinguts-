@@ -234,15 +234,15 @@ input:focus{outline:none;border-color:var(--teal4);box-shadow:0 0 0 3px rgba(29,
         <span style="font-size:20px">🔵</span>
         <div>
           <div class="vax-opt-lbl" id="lblUnknown">Desconegut — Sense cap informació</div>
-          <div class="vax-opt-hint" id="hintUnknown">Protocol inici des de zero</div>
+          <div class="vax-opt-hint" id="hintUnknown">Es farà pauta accelerada des de zero (ASPCAT 2025)</div>
         </div>
       </div>
       <div class="vax-opt" id="vo_record" onclick="selVaxStatus('record')">
         <div class="radio-dot" id="vr_record"></div>
         <span style="font-size:20px">📋</span>
         <div>
-          <div class="vax-opt-lbl" id="lblRecord">Cartilla vacunal — Documentació escrita</div>
-          <div class="vax-opt-hint" id="hintRecord">Selecciona les vacunes documentades</div>
+          <div class="vax-opt-lbl" id="lblRecord">Carnet vacunal físic — Documentació escrita</div>
+          <div class="vax-opt-hint" id="hintRecord">Introdueix les dades al teu programa habitual de vacunes</div>
         </div>
       </div>
       <div class="vax-opt" id="vo_verbal" onclick="selVaxStatus('verbal')">
@@ -250,18 +250,32 @@ input:focus{outline:none;border-color:var(--teal4);box-shadow:0 0 0 3px rgba(29,
         <span style="font-size:20px">🗣️</span>
         <div>
           <div class="vax-opt-lbl" id="lblVerbal">Verbalització familiar — Sense document físic</div>
-          <div class="vax-opt-hint" id="hintVerbal">Informació referida pels pares/tutors</div>
+          <div class="vax-opt-hint" id="hintVerbal">Marca les revisions que han fet al país d'origen</div>
         </div>
       </div>
     </div>
 
+    <!-- Cas A: Desconegut -->
+    <div id="vaxUnknownMsg" style="display:none;margin-top:12px;padding:14px 16px;background:#E8F4FD;border-radius:10px;font-size:13px;color:#1565C0">
+      <strong>Protocol pauta accelerada des de zero</strong><br>
+      Es generarà un calendari d'immunització complet des de zero seguint l'ASPCAT 2025 adaptat a l'edat del pacient.
+    </div>
+
+    <!-- Cas B: Carnet físic -->
+    <div id="vaxRecordMsg" style="display:none;margin-top:12px;padding:14px 16px;background:#E8F5E9;border-radius:10px;font-size:13px;color:#2E7D32">
+      <strong>📋 Carnet vacunal disponible</strong><br>
+      Introdueix les dades al teu programa habitual de vacunes. L'informe d'acollida es generarà sense l'apartat vacunal detallat.
+    </div>
+
+    <!-- Cas C: Verbalització — calendari del país -->
     <div id="vaxListSection" style="display:none">
-      <div class="lbl" id="lblVaxSel" style="margin-bottom:8px">Marca les vacunes administrades (o comunicades per la família):</div>
-      <div class="dose-legend">
-        <span>Clica cada dosi per canviar l'estat:</span>
-        <span>⬜ No posada &nbsp; ✅ Posada correctament &nbsp; ⚠️ Fora de pauta</span>
+      <div style="margin-top:12px;padding:12px 14px;background:#FFF8E1;border-radius:10px;font-size:13px;color:#795548;margin-bottom:14px">
+        <strong>🗣️ Verbalització familiar</strong> — Marca les revisions pediàtriques a les que ha assistit el nen/a al país d'origen. L'app calcularà les vacunes que probablement porta.
       </div>
-      <div class="vax-grid" id="vaxGrid"></div>
+      <div id="vaxCalendariPais" style="font-size:13px;color:#888;padding:10px">
+        <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+        <span style="margin-left:8px">Carregant calendari de vacunació del país d'origen...</span>
+      </div>
     </div>
 
     <div id="mgfSection" style="display:none">
@@ -786,6 +800,10 @@ function openDrop(){if(document.getElementById('countryInput').value.length>=2)f
 function closeDrop(){document.getElementById('countryDrop').classList.remove('open');}
 
 // ── VAX STATUS ────────────────────────────────────────────────────
+// Calendari del país d'origen i revisions marcades
+let paisCalendari = null;
+let revisionsMarked = new Set();
+
 function selVaxStatus(val){
   vaxStatus=val;
   ['unknown','record','verbal'].forEach(v=>{
@@ -795,7 +813,75 @@ function selVaxStatus(val){
     rd.style.background=v===val?'#1D9E75':'';
     rd.innerHTML=v===val?'<div class="radio-inner"></div>':'';
   });
-  document.getElementById('vaxListSection').style.display=(val==='record'||val==='verbal')?'block':'none';
+  document.getElementById('vaxUnknownMsg').style.display  = val==='unknown'?'block':'none';
+  document.getElementById('vaxRecordMsg').style.display   = val==='record'?'block':'none';
+  document.getElementById('vaxListSection').style.display = val==='verbal'?'block':'none';
+  if(val==='verbal' && country) loadPaisCalendari();
+
+  const mgfSec=document.getElementById('mgfSection');
+  if(gender==='F' && hasMGFRisk(country?.code||'')) {
+    mgfSec.style.display='block'; mgfStatus='';
+  } else {
+    mgfSec.style.display='none'; mgfStatus='na';
+  }
+}
+
+async function loadPaisCalendari(){
+  if(!country) return;
+  const dob = document.getElementById('dob').value;
+  const container = document.getElementById('vaxCalendariPais');
+  container.innerHTML = '<div style="display:flex;align-items:center;gap:10px;padding:8px 0"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><span style="font-size:13px;color:#888">Carregant calendari de '+cname(country)+'...</span></div>';
+  paisCalendari=null; revisionsMarked=new Set();
+
+  try {
+    const res = await fetch('/.netlify/functions/claude', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        system:'Expert en calendaris vacunals OMS/PAI mundials. Respon SEMPRE amb JSON pur, sense cap altre text ni backticks.',
+        message:`Dona'm el calendari vacunal oficial (PAI/OMS) de ${cname(country)} per a un infant nascut el ${dob||'2020-01-01'}. Inclou totes les visites des del naixement fins als 14 anys. Respon ÚNICAMENT amb aquest JSON:
+{"pais":"${cname(country)}","revisions":[{"edat":"Néixer","vacunes":["BCG","VHB"]},{"edat":"2 mesos","vacunes":["DTPa","HBV","Hib","IPV","PCV"]},...]}`
+      })
+    });
+    const data = await res.json();
+    let parsed=null;
+    try { parsed=JSON.parse((data.content||'{}').replace(/```json|```/g,'').trim()); } catch(e2){}
+    if(parsed?.revisions?.length>0){ paisCalendari=parsed; renderPaisCalendari(); }
+    else container.innerHTML='<p style="color:#A32D2D;font-size:13px">Error carregant el calendari. Torna a intentar-ho.</p>';
+  } catch(e){ container.innerHTML=`<p style="color:#A32D2D;font-size:13px">Error: ${e.message}</p>`; }
+}
+
+function renderPaisCalendari(){
+  if(!paisCalendari) return;
+  const container=document.getElementById('vaxCalendariPais');
+  const rows=paisCalendari.revisions.map(r=>{
+    const fet=revisionsMarked.has(r.edat);
+    return `<tr style="background:${fet?'#E8F5E9':'#fff'};cursor:pointer" onclick="toggleRevisio('${r.edat.replace(/'/g,"\\'").replace(/"/g,'\\"')}')">
+      <td style="padding:8px 10px;border:1px solid #ddd;width:36px;text-align:center;font-size:18px">${fet?'✅':'⬜'}</td>
+      <td style="padding:8px 10px;border:1px solid #ddd;font-weight:${fet?'600':'400'};color:${fet?'#2e7d32':'#333'}">Revisió dels <strong>${r.edat}</strong></td>
+      <td style="padding:8px 10px;border:1px solid #ddd;font-size:12px;color:#666">${r.vacunes.join(' · ')}</td>
+    </tr>`;
+  }).join('');
+  container.innerHTML=`<p style="font-size:12px;color:#666;margin-bottom:10px">Calendari oficial de <strong>${paisCalendari.pais}</strong> — Marca les revisions a les que ha assistit el pacient:</p>
+<table style="width:100%;border-collapse:collapse;font-size:13px">
+<tr style="background:#f0f0f0"><th style="padding:7px 10px;border:1px solid #ddd;width:36px"></th><th style="padding:7px 10px;border:1px solid #ddd;text-align:left">Revisió</th><th style="padding:7px 10px;border:1px solid #ddd;text-align:left">Vacunes administrades</th></tr>
+${rows}
+</table>
+<p style="font-size:11px;color:#999;margin-top:8px">Clica una fila per marcar ✅ / desmarcar ⬜ la revisió com a feta</p>`;
+}
+
+function toggleRevisio(edat){
+  if(revisionsMarked.has(edat)) revisionsMarked.delete(edat);
+  else revisionsMarked.add(edat);
+  renderPaisCalendari();
+}
+
+function getVerbalVaxSummary(){
+  if(!paisCalendari||revisionsMarked.size===0) return 'Cap revisió marcada';
+  const vacMap={};
+  paisCalendari.revisions.forEach(r=>{
+    if(revisionsMarked.has(r.edat)) r.vacunes.forEach(v=>{vacMap[v]=(vacMap[v]||0)+1;});
+  });
+  return 'Revisions fetes: '+[...revisionsMarked].join(', ')+'. Vacunes assumides: '+Object.entries(vacMap).map(([v,n])=>`${v}(${n}d)`).join(', ');
 }
 
 // ── VACUNES ───────────────────────────────────────────────────────
@@ -958,12 +1044,10 @@ async function generateReport(){
   const hasNoDosesMarked = vaxListSummary === 'Cap dosi marcada';
 
   const vaxDesc = vaxStatus==='unknown'
-    ? 'SENSE documentació vacunal — aplicar protocol complet des de zero'
-    : vaxStatus==='verbal'
-      ? hasNoDosesMarked
-        ? `Verbalització familiar: la família refereix que el nen/a ha estat vacunat/ada però NO especifica quines vacunes ni dosis. INSTRUCCIÓ: consulta el calendari vacunal de l'OMS per a ${cname(country)} i assumeix que probablement ha rebut les vacunes del programa nacional d'aquell país. Per a cada vacuna del programa, assumeix que porta NOMÉS la primera dosi (la que s'administra a l'edat més petita). Construeix el calendari de rescat a partir d'aquí.`
-        : `Verbalització familiar (fiabilitat baixa, sense document físic). Dosis referides per la família: ${vaxListSummary}. Per a vacunes verbalitzades sense especificar dosi concreta, assumeix que porta la primera dosi del calendari del país d'origen.`
-      : `Cartilla vacunal (documentació escrita). Dosis documentades: ${vaxListSummary}`;
+    ? 'SENSE documentació vacunal — pauta accelerada des de zero'
+    : vaxStatus==='record'
+      ? 'Carnet vacunal físic (dades al programa del professional)'
+      : getVerbalVaxSummary();
   const mgfLabelMap={yes:lang==='ca'?'Sí confirmada':lang==='es'?'Sí confirmada':'Yes confirmed',no:'No',suspected:lang==='ca'?'Sospita/No explorada':lang==='es'?'Sospecha/No explorada':'Suspected/Not examined',unknown:lang==='ca'?'Desconegut':lang==='es'?'Desconocido':'Unknown'};
   const mgfLbl=mgfLabelMap[mgfStatus]||'No informat';
 
