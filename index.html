@@ -1645,7 +1645,8 @@ Respon en català. FORMAT OBLIGATORI: HTML simple amb taules i llistes curtes. P
 function resetApp(){
   gender=''; country=null; vaxStatus=''; vaccines=new Set(); mgfStatus=''; doseState={};
   document.getElementById('dob').value='';
-  document.getElementById('arrival').value=new Date().toISOString().split('T')[0];
+  document.getElementById('arrival').value='';
+  document.getElementById('visitDate').value=new Date().toISOString().split('T')[0];
   document.getElementById('countryInput').value='';
   document.getElementById('agePill').style.display='none';
   ['M','F'].forEach(v=>{document.getElementById('g'+v).classList.remove('sel');document.getElementById('rd'+v).style.cssText='';document.getElementById('rd'+v).innerHTML='';});
@@ -1653,7 +1654,8 @@ function resetApp(){
 }
 
 // Init
-document.getElementById('arrival').value=new Date().toISOString().split('T')[0];
+document.getElementById('arrival').value='';
+document.getElementById('visitDate').value=new Date().toISOString().split('T')[0];
 buildVaxGrid();
 </script>
 </body>
