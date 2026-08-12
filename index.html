@@ -1314,17 +1314,33 @@ async function generateReport(){
     : '';
 
   const vaxIds = vaccineList.map(v=>`"${v.id}": enter 0-${v.total}`).join(',\n  ');
+
+  // Construeix el context de vacunació segons el tipus de documentació
+  let vaxContext = '';
+  if(vaxStatus==='unknown') {
+    vaxContext = 'ZERO dosis. Pacient sense cap vacunació documentada. Totes les vacunes des de zero.';
+  } else if(vaxStatus==='verbal' && revisionsMarked.size > 0 && paisCalendari) {
+    // Construeix context detallat de les revisions marcades
+    const revisionsDetall = paisCalendari.revisions
+      .filter(r => revisionsMarked.has(r.edat))
+      .map(r => `- ${r.edat}: ${r.vacunes.join(', ')}`)
+      .join('\n');
+    vaxContext = `Verbalització familiar. El pacient HA ASSISTIT a les següents revisions del calendari de ${cname(country)}:\n${revisionsDetall}\nA partir d'això, calcula quantes dosis de cada vacuna ASPCAT té el pacient.`;
+  } else if(vaxStatus==='verbal') {
+    vaxContext = `Verbalització familiar sense revisions especificades. Assumeix la PRIMERA dosi de cada vacuna del PAI de ${cname(country)} per a persona nascuda el ${dob}.`;
+  } else if(vaxStatus==='record') {
+    vaxContext = `Carnet vacunal físic. Dosis documentades: ${getDosesSummary()}`;
+  }
+
   const vaxAIprompt = `Pacient de ${cname(country)}, nascut/da ${dob}, edat ${age} (${ageAtVisit.toFixed(1)} anys), sexe ${gender==='F'?'femeni':'masculi'}.
-Documentacio vacunal: ${vaxDesc}.${getDosesSummary()!=='Cap dosi marcada'?' Dosis marcades: '+getDosesSummary():''}
+${vaxContext}
 ${pentaNote}
-${vaxStatus==='verbal'&&getDosesSummary()==='Cap dosi marcada'?'Familia verbalitza vacunacio sense especificar. Assumeix la PRIMERA dosi de cada vacuna del PAI de '+cname(country)+' per a persona nascuda el '+dob+'.':''}
-${vaxStatus==='unknown'?'Zero dosis. Tot des de zero.':''}
-Consulta el calendari PAI/OMS de ${cname(country)} per a persona nascuda el ${dob}.
-IMPORTANT: srp i varicella son INDEPENDENTS. Compta cada una per separat. Si porta 1 srp i 0 varicella: srp=1, varicella=0.
+REGLES: srp i varicella son INDEPENDENTS. Compta cada una per separat.
+Per a vacunes administrades al país d'origen que NO existeixen al calendari ASPCAT (ex: febre groga, vacuna xarampió sola MCV sense rubèola ni orions), indica-les a "notes".
 Respon UNICAMENT amb JSON pur (sense cap text ni backticks):
 {
   ${vaxIds},
-  "notes": "vacunes del PAI de ${cname(country)} NO al calendari ASPCAT"
+  "notes": "vacunes del PAI de ${cname(country)} NO al calendari ASPCAT si n'hi ha"
 }`;
 
   try {
