@@ -1586,7 +1586,13 @@ Genera la valoració MGF en FORMAT ESTRICTE. Respon ÚNICAMENT amb HTML simple.
       });
       const data=await res.json();
       if(data.error) throw new Error(data.error);
-      document.getElementById(sec.id).innerHTML=data.content;
+      const rawContent = data.content || '';
+      const cleanContent = rawContent
+        .replace(/^```html\s*/i, '')
+        .replace(/^```\s*/i, '')
+        .replace(/\s*```$/i, '')
+        .trim();
+      document.getElementById(sec.id).innerHTML = cleanContent;
     }catch(e){
       document.getElementById(sec.id).innerHTML=`<p style="color:#A32D2D"><strong>Error:</strong> ${e.message}</p>`;
     }
